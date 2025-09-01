@@ -4,7 +4,8 @@ import {prisma} from "./db.js"
 
 //serialize - add data in the store (keep it minimal)
 passport.serializeUser((user, done) => {
-    done(null, user.id)
+    console.log(user.id)
+    return done(null, user.id)
 })
 
 // deserialize - get the user data using the id from session and send the full user data
@@ -13,9 +14,9 @@ passport.deserializeUser(async (id, done) => {
         const user = await prisma.user.findUnique({
             where: {id: id}
         })
-        done(null, user)
+        return done(null, user)
     } catch (error) {
-        done(error,null)
+        return done(error,null)
     }
 })
 
@@ -40,8 +41,8 @@ passport.use(new GoogleStrategy({
                 name: profile.displayName
             }
         })
-        done(null, user)
+        return done(null, user)
     } catch (error) {
-        done(error,null)
+        return done(error,null)
     }
 }))

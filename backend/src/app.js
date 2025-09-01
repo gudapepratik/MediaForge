@@ -23,29 +23,6 @@ app.use(express.urlencoded({
 
 app.use(express.static('public'));
 
-
-// auth endpoints
-app.get('/auth/google', passport.authenticate('google', {
-    scope: ['profile', 'email']
-}))
-
-app.get('/auth/google/callback', passport.authenticate('google', {
-    failureRedirect: "/login"
-}, () => {
-
-}))
-
-app.get('/auth/google/callback', (req,res,next) => {
-    passport.authenticate('google', {failureRedirect: '/login'}, (err, user,info,status) => {
-        if(err) return next(err)
-        if(!user) return res.redirect('/signup')
-        res.redirect('/api')
-    })
-})
-
-
-app.use('/api', router)
-
 app.use(session({
     store: new pgSession({
         pool: pgPool,
@@ -59,5 +36,18 @@ app.use(session({
 
 app.use(passport.initialize())
 app.use(passport.session())
+
+// auth endpoints
+app.get('/auth/google', passport.authenticate('google', {
+    scope: ['profile', 'email']
+}))
+
+app.get('/auth/google/callback', passport.authenticate('google', {
+    failureRedirect: '/login', // Passport handles redirection on failure
+    successRedirect: '/api' // Passport handles redirection on success
+}));
+
+app.use('/api', router)
+
 
 export default app;
