@@ -4,6 +4,7 @@ import session from 'express-session'
 import connectPgSimple from 'connect-pg-simple'
 import express from 'express'
 import passport from 'passport'
+import cors from 'cors'
 import router from './routes/auth.routes.js'
 import './config/dotenv.js'
 import './config/passport.js'
@@ -11,6 +12,17 @@ import './config/passport.js'
 const app = express();
 const pgPool = new pg.Pool({connectionString: process.env.DATABASE_URL})
 const pgSession = connectPgSimple(session)
+
+app.use(cors({
+    credentials: true,
+    origin: (origin, callback) => {
+        if(!origin || origin === 'http://localhost:5173') {
+            callback(null, true)
+        } else{
+            callback(new Error("Not allowed by CORS"))
+        }
+    }
+}))
 
 app.use(express.json({
     limit: "8kb"
