@@ -48,21 +48,6 @@ app.use(session({
 
 app.use(passport.initialize())
 app.use(passport.session())
-
-// auth endpoints
-app.get('/auth/google', passport.authenticate('google', {
-    scope: ['profile', 'email']
-}))
-
-app.get('/auth/google/callback', passport.authenticate('google', {
-    failureRedirect: '/login', // Passport handles redirection on failure
-    successRedirect: '/auth/handle-success' // Passport handles redirection on success
-}));
-
-app.get('/auth/handle-success', () => {
-    
-})
-
 app.use('/api', router)
 
 

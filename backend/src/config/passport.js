@@ -4,7 +4,6 @@ import {prisma} from "./db.js"
 
 //serialize - add data in the store (keep it minimal)
 passport.serializeUser((user, done) => {
-    console.log(user.id)
     return done(null, user.id)
 })
 
@@ -23,16 +22,24 @@ passport.deserializeUser(async (id, done) => {
 passport.use(new GoogleStrategy({
     clientID: process.env.GOOGLE_AUTH_CLIENTID,
     clientSecret: process.env.GOOGLE_AUTH_SECRET,
-    callbackURL: "/auth/google/callback"
+    callbackURL: "/api/auth/google/callback"
 }, async (accessToken, refreshToken, profile, done) => {
     try {
+        if (profile.emails[0].value === 'pratik.gudape23@pccoepune.org') {
+            console.log('Mimicking login failure for a specific user.');
+            // Return false to tell Passport that authentication failed
+            return done(null, false);
+        }
         let user = await prisma.user.findUnique({
             where: {googleId: profile.id}
         })
+        
 
         if(user) {
+            user.isNewUser = false;
             return done(null, user)
         }
+        
 
         user = await prisma.user.create({
             data: {
@@ -41,6 +48,8 @@ passport.use(new GoogleStrategy({
                 name: profile.displayName
             }
         })
+        user.isNewUser = true;
+        console.log(user)
         return done(null, user)
     } catch (error) {
         return done(error,null)
