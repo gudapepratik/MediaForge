@@ -56,8 +56,12 @@ app.get('/auth/google', passport.authenticate('google', {
 
 app.get('/auth/google/callback', passport.authenticate('google', {
     failureRedirect: '/login', // Passport handles redirection on failure
-    successRedirect: '/api' // Passport handles redirection on success
+    successRedirect: '/auth/handle-success' // Passport handles redirection on success
 }));
+
+app.get('/auth/handle-success', () => {
+    
+})
 
 app.use('/api', router)
 

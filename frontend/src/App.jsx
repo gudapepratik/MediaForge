@@ -1,15 +1,11 @@
 import axios from "axios"
+import { useEffect } from "react"
+import { useDispatch } from "react-redux"
+import { fetchUser } from "./store/authSlice"
 
 function App() {
-
-  const handleLogin = async () => {
-    //redirect user
-    window.location.href = "http://localhost:3000/auth/google"
-  }
-
   return (
     <>
-      <button onClick={handleLogin}>Login with google</button>
     </>
   )
 }
