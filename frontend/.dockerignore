@@ -1,0 +1,17 @@
+node_modules
+
+# Logs
+npm-debug.log
+yarn-debug.log
+yarn-error.log
+
+# Env files (better to pass via docker-compose)
+.env
+
+# Git
+.git
+.gitignore
+
+# Editor / OS files
+.vscode
+.DS_Store

@@ -45,7 +45,7 @@ passport.use(new GoogleStrategy({
             data: {
                 googleId: profile.id,
                 email: profile.emails[0].value,
-                name: profile.displayName
+                name: profile.displayName,
             }
         })
         user.isNewUser = true;
