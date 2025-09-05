@@ -23,6 +23,8 @@ model User {
   googleId  String?  @unique
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  videos video[]
 }
 
 model session {
@@ -31,4 +33,37 @@ model session {
   expire DateTime @db.Timestamp(6)
 
   @@index([expire], map: "IDX_session_expire")
+}
+
+enum VIDEO_STATE {
+  CREATED // when first requested for presigned url
+  UPLOADED // when video is uploaded to storage
+  PROCESSING // when the transcoding is in progress
+  READY // when video + versions are ready to serve
+  FAILED // when upload / transcoding fails
+}
+
+model video {
+  id          String      @id @default(cuid())
+  userId      String
+  fileName    String
+  contentType String
+  fileSize    Int
+  storageKey  String?
+  status      VIDEO_STATE @default(CREATED)
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  user     User           @relation(fields: [userId], references: [id])
+  variants videoVariant[]
+}
+
+model videoVariant {
+  id         String   @id @default(cuid())
+  videoId    String
+  resolution String
+  storageKey String
+  createdAt  DateTime @default(now())
+
+  video video @relation(fields: [videoId], references: [id])
 }
