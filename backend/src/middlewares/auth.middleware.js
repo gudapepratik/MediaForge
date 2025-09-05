@@ -1,9 +1,9 @@
+import { ApiError } from "../utils/ApiError.js";
+
 export const checkAuth = (req, res, next) => {
   if (req.isAuthenticated()) {
     return next();
   }
 
-  return res
-    .status(401)
-    .json({ success: false, message: "unauthorized required, please Login." });
+  return next(new ApiError(401, "Unauthorized Request!"))
 };

@@ -5,9 +5,10 @@ import connectPgSimple from 'connect-pg-simple'
 import express from 'express'
 import passport from 'passport'
 import cors from 'cors'
-import router from './routes/auth.routes.js'
+import router from './routes/route.js'
 import './config/dotenv.js'
 import './config/passport.js'
+import { ApiError } from './utils/ApiError.js'
 
 const app = express();
 const pgPool = new pg.Pool({connectionString: process.env.DATABASE_URL})

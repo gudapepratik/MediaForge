@@ -2,6 +2,7 @@ import React from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import {NavLink } from 'react-router'
 import { logoutUser } from '../store/authSlice';
+import VideoUpload from '../components/VideoUpload';
 
 function Home() {
   const {isAuthenticated, isLoading, user} = useSelector(state => state.auth)
@@ -31,6 +32,8 @@ function Home() {
         : 
         <NavLink to={"/login"} className='p-4 bg-red-700 text-white '>Login</NavLink>
       }
+
+      <VideoUpload/>
     </div>
   )
 }

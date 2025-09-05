@@ -6,15 +6,11 @@ import { ApiError } from "../utils/ApiError.js";
 
 const router = Router()
 
-router.get('/', (req,res) => {
-    return res.json({message: "Welcome to MEDIAFORGE API"})
-})
-
-router.get('/auth/google', passport.authenticate('google', {
+router.get('/google', passport.authenticate('google', {
     scope: ['profile', 'email']
 }))
 
-router.get('/auth/google/callback', (req, res, next) => {
+router.get('/google/callback', (req, res, next) => {
     passport.authenticate('google', { failureRedirect: `${process.env.FRONTEND_URL}/login?login_failed=true` }, (err, user, info, status) => {
         if (err) {
             return next(err);
@@ -39,16 +35,16 @@ router.get('/auth/google/callback', (req, res, next) => {
     })(req, res, next);
 });
 
-router.get('/auth/current', checkAuth, (req, res) => {
+router.get('/current', checkAuth, (req, res) => {
     return res.status(200).json(new ApiResponse(200, {user: req?.user}, "User is logged in"))
 })
 
-router.post('/auth/logout', checkAuth, (req,res,next) => {
+router.post('/logout', checkAuth, (req,res,next) => {
     req.logout((err) => {
         if(err) {
             next(new ApiError(500, "Unexpected Error occurred: Logout Failed", err))
         }
-
+        console.log("heelllla yaaaya")
         // clear the session and cookie
         req.session.destroy((err) => {
             if(err)
@@ -60,4 +56,6 @@ router.post('/auth/logout', checkAuth, (req,res,next) => {
         return res.status(200).json(new ApiResponse(200, null, "Logout successfull"))
     })
 })
+
+
 export default router

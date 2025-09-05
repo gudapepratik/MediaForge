@@ -49,7 +49,6 @@ passport.use(new GoogleStrategy({
             }
         })
         user.isNewUser = true;
-        console.log(user)
         return done(null, user)
     } catch (error) {
         return done(error,null)
