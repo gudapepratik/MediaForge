@@ -1,6 +1,8 @@
 import { Router } from "express";
 import passport from "passport";
 import { checkAuth } from "../middlewares/auth.middleware.js";
+import {ApiResponse} from "../utils/ApiResponse.js"
+import { ApiError } from "../utils/ApiError.js";
 
 const router = Router()
 
@@ -38,24 +40,24 @@ router.get('/auth/google/callback', (req, res, next) => {
 });
 
 router.get('/auth/current', checkAuth, (req, res) => {
-    return res.status(200).json({success: true, data: {user: req?.user}, message: "User is logged in"})
+    return res.status(200).json(new ApiResponse(200, {user: req?.user}, "User is logged in"))
 })
 
-router.post('/auth/logout', checkAuth, (req,res) => {
+router.post('/auth/logout', checkAuth, (req,res,next) => {
     req.logout((err) => {
         if(err) {
-            return res.status(500).json({success: false, data: {error: err}, message: "Unexpected Error occurred: Logout failed"})
+            next(new ApiError(500, "Unexpected Error occurred: Logout Failed", err))
         }
 
         // clear the session and cookie
         req.session.destroy((err) => {
             if(err)
-                return res.status(500).json({success: false, data: {error: err}, message: "Unexpected Error occurred: Logout success with errors"})
+                next(new ApiError(500, "Unexpected Error occurred: Logout Succeded with Errors", err))
         })
 
         res.clearCookie('connect.sid')
 
-        return res.status(200).json({success: true, data: null, message: "Logout successfull"})
+        return res.status(200).json(new ApiResponse(200, null, "Logout successfull"))
     })
 })
 export default router

@@ -1,9 +1,11 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import axios from 'axios'
+import envConfig from '../../config'
 
+// for email password login path
 export const loginUser = createAsyncThunk('auth/loginUser', async (userData, {rejectWithValue}) => {
     try {
-        const response = await axios.post('/auth/login', userData);
+        const response = await axios.post(`${envConfig.BACKEND_ENDPOINT}/api/auth/login`, userData);
         return response.data
     } catch (error) {
         return rejectWithValue.rejectWithValue(error.response.data);
@@ -12,7 +14,7 @@ export const loginUser = createAsyncThunk('auth/loginUser', async (userData, {re
 
 export const fetchUser = createAsyncThunk('auth/fetchUser', async (_, {rejectWithValue}) => {
     try {
-        const response = await axios.get('http://localhost:3000/api/auth/current',{
+        const response = await axios.get(`${envConfig.BACKEND_ENDPOINT}/api/auth/current`,{
             withCredentials: true
         })
 
@@ -26,10 +28,10 @@ export const fetchUser = createAsyncThunk('auth/fetchUser', async (_, {rejectWit
 
 export const logoutUser =  createAsyncThunk('/auth/logout', async (_, {rejectWithValue}) => {
     try {
-        const response = await axios.post('http://localhost:3000/api/auth/logout',_,{
+        const response = await axios.post(`${envConfig.BACKEND_ENDPOINT}/api/auth/logout`,_,{
             withCredentials: true
         })
-        console.log(response)
+
         return response.data
     } catch (error) {
         console.log(error)
@@ -100,7 +102,7 @@ const authSlice = createSlice({
                 })
                 .addCase(logoutUser.rejected, (state, action) => {
                     state.isLoading = false,
-                    state.error = action.payload.data
+                    state.error = action.payload?.data
                 })
                 .addCase(loginUser.pending, (state) => {
                     state.isLoading = true;

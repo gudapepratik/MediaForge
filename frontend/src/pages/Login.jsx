@@ -1,5 +1,6 @@
 import React, { useEffect } from "react";
 import {useNavigate, useSearchParams } from "react-router";
+import envConfig from '../../config';
 
 function Login() {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -9,7 +10,7 @@ function Login() {
   const isNewUser = searchParams.get('is_new_user') === 'true'
 
   const handleLoginRedirect = () => {
-    window.location.href = "http://localhost:3000/api/auth/google";
+    window.location.href = `${envConfig.BACKEND_ENDPOINT}/api/auth/google`;
   };
 
   useEffect(() => {

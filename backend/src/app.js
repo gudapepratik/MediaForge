@@ -50,5 +50,25 @@ app.use(passport.initialize())
 app.use(passport.session())
 app.use('/api', router)
 
+// error handler
+app.use((err, req, res, next) => {
+    if (err instanceof ApiError) {
+        const { statusCode, message, errors} = err;
+
+        res.status(statusCode).json({
+            success: false,
+            message,
+            errors,
+            stack: undefined,
+        });
+    } else {
+        const { statusCode, message, errors} = err;
+        res.status(500).json({
+            success: false,
+            errors,
+            message
+        });
+    }
+});
 
 export default app;
