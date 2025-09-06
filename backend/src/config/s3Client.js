@@ -12,21 +12,121 @@ const s3 = new AWS.S3Client({
     // forcePathStyle: true
 });
 
+const getUploadKey = (userId, fileName, videoId) => {
+    return `videos/${userId}/${videoId}/original/${fileName}`;
+}
 
-export const getSignedUploadUrl = async (userId, fileName, videoId, contentType) => {
+const BUCKET = process.env.STORAGE_BUCKET;
+
+export const createUploadObjectUrl = async (userId, fileName, videoId, contentType) => {
     try {
         const key = `videos/${userId}/${videoId}/original/${fileName}`;
         const command = new AWS.PutObjectCommand({
-            Bucket: process.env.STORAGE_BUCKET,
-            Key: key,
+            Bucket: BUCKET,
+            Key: getUploadKey(userId, fileName, videoId),
             ContentType: contentType
         })
-        
+
         const url = await getSignedUrl(s3, command, {expiresIn: 60 * 15 /* 15 minutes */ })
 
         return {url, key};
     } catch (error) {
-        console.log("getSignedUploadUrl: Error", error?.message)
+        console.log("createUploadObjectUrl: Error", error?.message)
+        throw error;
+    }
+}
+
+export const createUploadPartUrl = async (key, partNumber, uploadId) => {
+    try {
+        const command = await AWS.UploadPartCommand({
+            Bucket: BUCKET,
+            Key: key,
+            PartNumber: Number(partNumber),
+            UploadId: uploadId,
+    
+        })
+    
+        const url = await getSignedUrl(s3, command, {
+            expiresIn: 60 * 60
+        })
+    
+        return {url};
+    } catch (error) {
+        console.log("createUploadPartUrl: Error", error?.message)
+        throw error;
+    }
+}
+
+export const createMultiPartUpload  = async (userId, fileName, videoId, contentType) => {
+    try {
+        const key = getUploadKey(userId, fileName, videoId);
+
+        const command = new AWS.CreateMultipartUploadCommand({
+            Bucket: BUCKET,
+            Key: key,
+            ContentType: contentType
+        })
+    
+        const {UploadId} = await s3.send(command);
+
+        return {key, UploadId};
+    } catch (error) {
+        console.log("createMultiPartUpload: Error", error?.message)
+        throw error;
+    }
+}
+
+export const completeMultiPartUpload  = async (key, uploadId, parts) => {
+    try {
+        const command = new AWS.CompleteMultipartUploadCommand({
+            Bucket: BUCKET,
+            Key: key,
+            UploadId: uploadId,
+            MultipartUpload: {
+                Parts: parts
+            }
+        })
+    
+        const {ETag} = await s3.send(command);
+        
+        return {success: true, ETag};
+    } catch (error) {
+        console.log("completeMultiPartUpload: Error", error?.message)
+        throw error;
+    }
+}
+
+export const abortMultiPartUpload  = async (key, uploadId) => {
+    try {
+        const command = new AWS.AbortMultipartUploadCommand({
+            Bucket: BUCKET,
+            Key: key,
+            UploadId: uploadId,
+        })
+    
+        await s3.send(command);
+
+        return {success: true};
+    } catch (error) {
+        console.log("abortMultiPartUpload: Error", error?.message)
+        throw error;
+    }
+}
+
+export const listUploadParts  = async (key, uploadId) => {
+    try {
+        const command = new AWS.ListPartsCommand({
+            Bucket: BUCKET,
+            Key: key,
+            UploadId: uploadId
+        })
+    
+        const {Parts} = await s3.send(command);
+
+        // Parts is an array of Part objects which contains {partNumber, size, Etags} of each parts
+        return {Parts};
+    } catch (error) {
+        console.log("listUploadParts: Error", error?.message)
         throw error;
     }
 }

@@ -1,5 +1,5 @@
 import { prisma } from "../config/db.js"
-import { getSignedUploadUrl } from "../config/s3Client.js"
+import { createUploadObjectUrl} from "../config/s3Client.js"
 import { ApiError } from "../utils/ApiError.js"
 import { ApiResponse } from "../utils/ApiResponse.js"
 
@@ -26,7 +26,7 @@ export const requestVideoUpload = async (req, res, next) => {
         console.log(process.env.STORAGE_REGION)
         
         // create presigned url
-        const {url, key} = await getSignedUploadUrl(user.id, fileName, video.id, contentType);
+        const {url, key} = await createUploadObjectUrl(user.id, fileName, video.id, contentType);
 
         // update video 
         await prisma.video.update({
