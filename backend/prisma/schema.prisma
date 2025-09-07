@@ -41,6 +41,7 @@ enum VIDEO_STATE {
   PROCESSING // when the transcoding is in progress
   READY // when video + versions are ready to serve
   FAILED // when upload / transcoding fails
+  CANCELLED // change -> when user cancels upload / process
 }
 
 model video {
@@ -56,7 +57,7 @@ model video {
 
   user     User           @relation(fields: [userId], references: [id])
   variants videoVariant[]
-  video    upload?
+  upload    upload?
 }
 
 enum UPLOAD_STATE {
@@ -70,7 +71,7 @@ model upload {
   id      String @id @default(cuid())
   videoId String @unique
 
-  UploadID String       @unique // from S3
+  uploadId String       @unique // from S3
   status   UPLOAD_STATE @default(INITIATED)
 
   createdAt DateTime @default(now())
@@ -84,7 +85,7 @@ enum PART_STATE {
   PENDING
   INITIATED
   COMPLETED
-  CANCELLED
+  CANCELLED // should be FAILED
 }
 
 model uploadPart {

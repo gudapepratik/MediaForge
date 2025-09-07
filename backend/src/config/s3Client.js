@@ -84,12 +84,12 @@ export const completeMultiPartUpload  = async (key, uploadId, parts) => {
             UploadId: uploadId,
             MultipartUpload: {
                 Parts: parts
-            }
+            },
         })
     
-        const {ETag} = await s3.send(command);
+        const {ETag, Location, Key} = await s3.send(command);
         
-        return {success: true, ETag};
+        return {success: true, ETag, Location, Key};
     } catch (error) {
         console.log("completeMultiPartUpload: Error", error?.message)
         throw error;
