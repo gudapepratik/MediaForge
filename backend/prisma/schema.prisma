@@ -56,6 +56,51 @@ model video {
 
   user     User           @relation(fields: [userId], references: [id])
   variants videoVariant[]
+  video    upload?
+}
+
+enum UPLOAD_STATE {
+  INITIATED
+  UPLOADING
+  COMPLETED
+  ABORTED
+}
+
+model upload {
+  id      String @id @default(cuid())
+  videoId String @unique
+
+  UploadID String       @unique // from S3
+  status   UPLOAD_STATE @default(INITIATED)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  video       video        @relation(fields: [videoId], references: [id], onDelete: Cascade)
+  uploadParts uploadPart[]
+}
+
+enum PART_STATE {
+  PENDING
+  INITIATED
+  COMPLETED
+  CANCELLED
+}
+
+model uploadPart {
+  id       String @id @default(cuid())
+  uploadId String // from DB
+
+  partNo    Int
+  partSize  BigInt
+  eTag      String?
+  status    PART_STATE @default(PENDING)
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+
+  upload upload @relation(fields: [uploadId], references: [id], onDelete: Cascade)
+
+  @@index([uploadId, partNo])
 }
 
 model videoVariant {

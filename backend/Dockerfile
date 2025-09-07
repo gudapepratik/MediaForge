@@ -10,13 +10,11 @@ RUN npm install
 
 COPY prisma ./prisma
 
+# Run command whenever schema changes
 RUN npx prisma generate
 
 # Copy source code
 COPY . .
-
-# Generate Prisma client for the correct platform
-# RUN npx prisma generate
 
 EXPOSE 3000
 
