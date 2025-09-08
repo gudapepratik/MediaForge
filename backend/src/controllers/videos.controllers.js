@@ -1,10 +1,11 @@
 import { prisma } from "../config/db.js"
-import { abortMultiPartUpload, completeMultiPartUpload, createMultiPartUpload, createUploadObjectUrl} from "../config/s3Client.js"
+import { abortMultiPartUpload, completeMultiPartUpload, createMultiPartUpload, createUploadObjectUrl, createUploadPartUrl} from "../config/s3Client.js"
 import { ApiError } from "../utils/ApiError.js"
 import { ApiResponse } from "../utils/ApiResponse.js"
 
 const CHUNK_SIZE = 10000;
 
+// stale
 export const requestVideoUpload = async (req, res, next) => {
     try {
         const {fileName, fileSize, contentType} = req.query
@@ -46,6 +47,7 @@ export const requestVideoUpload = async (req, res, next) => {
     }
 }
 
+// stale
 export const markVideoUploadSuccess = async (req, res, next) => {
     try {
         const {videoId} = req.params
@@ -66,6 +68,7 @@ export const markVideoUploadSuccess = async (req, res, next) => {
     }
 }
 
+// stale
 export const markVideoUploadFailed = async (req,res,next) => {
     try {
         const {videoId} = req.params
@@ -166,6 +169,43 @@ export const markVideoUploadCancelled = async (req,res,next) => {
     }
 }
 
+// issue presigned url for parts to be uploaded
+export const getUploadPartUrl = async (req,res,next) => {
+    try {
+        const {partId,uploadId} = req.params;
+
+        const upload = await prisma.upload.findUnique({
+            where: {id: uploadId},
+            include: {
+                uploadParts: {
+                    where: {id: partId}
+                },
+                video: {
+                    select: {
+                        storageKey: true,
+                    }
+                }
+            },
+            select: {
+                uploadId: true,
+                video: true,
+                uploadParts: true
+            }
+        })
+
+        if(!upload)
+            return next(new ApiError(404, "Upload Not Found"))
+
+        const {url} = await createUploadPartUrl(upload.video.id,upload.uploadParts[0].partNo, upload.uploadID)
+
+        return res.status(200).json(new ApiResponse(200, {url}, "Presigned url for requested part has been issued successfully"));
+    } catch (error) {
+        console.log("getUploadPartUrl Error", error);
+        return next(new ApiError(500, "Internal server error"))
+    }
+}
+
+// user request to upload a file using multi part upload feature
 export const requestMultiPartUpload = async (req, res, next) => {
     try {
         const {fileName, fileSize, contentType} = req.query
