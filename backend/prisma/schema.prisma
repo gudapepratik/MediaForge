@@ -85,7 +85,7 @@ enum PART_STATE {
   PENDING
   INITIATED
   COMPLETED
-  CANCELLED // should be FAILED
+  FAILED // should be FAILED
 }
 
 model uploadPart {
