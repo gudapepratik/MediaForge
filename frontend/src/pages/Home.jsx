@@ -28,9 +28,9 @@ function Home() {
       }
 
       {isAuthenticated ? 
-        <button onClick={handleLogout}  className='p-4 bg-red-700 text-white '>Logout</button>
+        <button onClick={handleLogout}  className='p-4 bg-red-700 text-white'>Logout</button>
         : 
-        <NavLink to={"/login"} className='p-4 bg-red-200 text-white'>Login</NavLink>
+        <NavLink to={"/login"} className='p-4 bg-red-200 text-zinc-100'>Login</NavLink>
       }
 
       <VideoUpload/>
