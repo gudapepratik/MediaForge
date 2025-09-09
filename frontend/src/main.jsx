@@ -11,12 +11,16 @@ import {createBrowserRouter} from 'react-router-dom'
 import Layout from './components/Layout.jsx'
 import Home from "./pages/Home.jsx";
 import Login from './pages/Login.jsx'
+import Uploads from './pages/Uploads.jsx'
+import Videos from './pages/Videos.jsx'
 
 const router = createBrowserRouter(
   createRoutesFromElements(
     <Route path="/" element={<Layout/>}>
       <Route index element={<Home/>}/>
       <Route path="/login" element={<Login/>}/>
+      <Route path="/uploads" element={<Uploads/>}/>
+      <Route path="/videos" element={<Videos/>}/>
     </Route>
   )
 )

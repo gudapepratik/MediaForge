@@ -46,7 +46,7 @@ function VideoUpload() {
             <button type='submit'>UPLOAD</button>
         </form>
 
-        <div>
+        <div className='h-1'>
             Upload PRogress: {uploadProgress}
         </div>
     </div>
