@@ -1,15 +1,12 @@
 import React from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import {NavLink } from 'react-router'
-import { logoutUser } from '../store/authSlice';
-import VideoUpload from '../components/VideoUpload';
 
 function Home() {
   const {isAuthenticated, isLoading, user} = useSelector(state => state.auth)
-  const dispatch = useDispatch();
 
   return (
-    <div className='h-1'>
+    <div className='w-[calc(100%-25%)] h-screen bg-zinc-500 text-white'>
       <h1>Welcome to the homepage</h1>
       {user && 
         <div>
@@ -18,7 +15,7 @@ function Home() {
         </div>
       }
 
-      <VideoUpload/>
+      {/* <VideoUpload/> */}
     </div>
   )
 }

@@ -21,8 +21,8 @@ function Navbar() {
 
   return (
     <>
-      <div className="h-[80px] w-full flex p-4 items-center justify-between bg-red-200">
-        <h1>MediaForge</h1>
+      <div className="h-[80px] w-full flex p-4 items-center justify-between bg-zinc-900 text-white">
+        <h1 className="font-semibold text-3xl pl-[5%]">MediaForge</h1>
 
         {isAuthenticated ? (
           <div className="flex gap-4 items-center">  
