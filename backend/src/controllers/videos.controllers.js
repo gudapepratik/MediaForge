@@ -3,7 +3,7 @@ import { abortMultiPartUpload, completeMultiPartUpload, createMultiPartUpload, c
 import { ApiError } from "../utils/ApiError.js"
 import { ApiResponse } from "../utils/ApiResponse.js"
 
-const CHUNK_SIZE = 10 * 1024 * 1024;
+const CHUNK_SIZE = 10 * 1024 * 1024; // 10 mb chunksize
 
 // fetches uploads information of a given user
 // GET /pending-uploads
@@ -252,7 +252,7 @@ export const createUploadPartPresignedUrl = async (req,res,next) => {
 }
 
 // marks given upload part as failed
-// PUT /mark-upload-part-completed/:partId
+// PUT /mark-upload-part-failed/:partId
 export const markUploadPartFailed = async (req,res,next) => {
     try {
         const {partId} = req.params;
@@ -352,7 +352,7 @@ export const markVideoUploadCancelled = async (req,res,next) => {
 }
 
 // completes the multi part upload for given video
-// PUT /complete-multipart-upload/:videoId
+// c
 export const markMultiPartUploadComplete = async (req,res,next) => {
     try {
         const {videoId} = req.params
