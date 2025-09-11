@@ -73,6 +73,7 @@ model upload {
 
   uploadId String       @unique // from S3
   status   UPLOAD_STATE @default(INITIATED)
+  hash String 
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
