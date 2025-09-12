@@ -64,10 +64,67 @@ export const getUploads = async (req, res, next) => {
             })
             .filter(Boolean) // remove nulls
 
-    
         return res.status(200).json(new ApiResponse(200, uploads, "Upload fetched successfully"))
     } catch (error) {
         console.log("getUploads Error", error)
+        return next(new ApiError(500, "Internal Server Error"))
+    }
+}
+
+// fetches uploads information of a given user and specific upload
+// GET /pending-uploads/:uploadId
+export const getUploadById = async (req, res, next) => {
+    try {
+        const user = req.user;
+        const {uploadId} = req.query;
+    
+        if(!user)
+            return next(new ApiError(404, "User Not Found"))
+        
+        if(!uploadId)
+          throw new ApiError(400, "UploadId is missing or invalid")
+    
+        const upload = await prisma.upload.findUnique({
+          where: {id: uploadId},
+          include: {
+            video: true,
+            uploadParts: true
+          }
+        })
+
+        const video = upload.video;
+
+        const totalParts = upload.uploadParts.length;
+        const completedParts = upload.uploadParts.filter(part => part.status === "COMPLETED");
+        const completedChunkSize = completedParts.reduce((sum, part) => sum + part.partSize, 0)
+        const completedPercentage = video.fileSize ? Math.round((Number(video.fileSize) / completedChunkSize) * 100) : 0;
+        const remainingUploadSize = Number(video.fileSize) - completedChunkSize;
+
+        const data =  {
+          videoId: video.id,
+          fileName: video.fileName,
+          fileSize: Number(video.fileSize),
+          contentType: video.contentType,
+          status: video.status,
+          createdAt: video.createdAt,
+          updatedAt: video.updatedAt,
+
+          uploadId: video.upload.id,
+          s3UploadId: video.upload.uploadId,
+          uploadStatus: video.upload.status,
+          uploadCreatedAt: video.upload.createdAt,
+          uploadUpdatedAt: video.upload.updatedAt,
+
+          totalParts,
+          completedParts: completedParts.length,
+          remainingParts: totalParts - completedParts.length,
+          percentage: completedPercentage,
+          remainingUploadSize
+        }
+
+        return res.status(200).json(new ApiResponse(200, data, "Upload details fetched successfully"))
+    } catch (error) {
+        console.log("getUploadById Error", error)
         return next(new ApiError(500, "Internal Server Error"))
     }
 }
@@ -100,14 +157,30 @@ export const getUploadStatus = async (req,res,next) => {
 // POST /create-multipart-upload-request
 export const requestMultiPartUpload = async (req, res, next) => {
     try {
-        const {fileName, fileSize, contentType} = req.query
+        const {fileName, fileSize, contentType, checksum} = req.body
         const user = req.user
 
         if(!user)
             return next(new ApiError(401, "user not authenticated"))
 
-        if(!fileName || !fileSize || !contentType)
+        if(!fileName || !fileSize || !contentType || !checksum)
             return next(new ApiError(400, "Invalid or missing data"))
+        
+        // check if file already exists
+        const isExist = await prisma.video.findUnique({
+          where: {
+            hash: checksum.toString(),
+          }
+        })
+
+        if (isExist) {
+          return res.status(200).json(new ApiResponse(200, {
+            isExist: true,
+            videoId: isExist.id,
+            status: isExist.status,
+            message: "File already uploaded or in progress."
+          }));
+        }
 
         
         // calculate chunks (no. of parts)
@@ -139,6 +212,7 @@ export const requestMultiPartUpload = async (req, res, next) => {
                 data: {
                     uploadId: UploadId,
                     videoId: video.id,
+                    hash: checksum
                 }
             })
 
@@ -158,7 +232,7 @@ export const requestMultiPartUpload = async (req, res, next) => {
         })
 
 
-        return res.status(200).json(new ApiResponse(200, {uploadId: result.uploadId, videoId: result.videoId, key: result.key, totalParts: chunks, chunkSize: CHUNK_SIZE}, "Multipart Upload initiated successfully"))
+        return res.status(200).json(new ApiResponse(200, {isExist: false, uploadId: result.uploadId, videoId: result.videoId, key: result.key, totalParts: chunks, chunkSize: CHUNK_SIZE}, "Multipart Upload initiated successfully"))
     } catch (error) {
         console.error("requestMultiPartUpload error:", error);
         return next(new ApiError(500, "Internal Server Error"))
