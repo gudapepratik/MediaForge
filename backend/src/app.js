@@ -55,7 +55,6 @@ app.use('/api', router)
 app.use((err, req, res, next) => {
     if (err instanceof ApiError) {
         const { statusCode, message, errors} = err;
-
         res.status(statusCode).json({
             success: false,
             message,

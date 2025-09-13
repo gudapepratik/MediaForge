@@ -38,12 +38,11 @@ export const createUploadObjectUrl = async (userId, fileName, videoId, contentTy
 
 export const createUploadPartUrl = async (key, partNumber, uploadId) => {
     try {
-        const command = await AWS.UploadPartCommand({
+        const command = new AWS.UploadPartCommand({
             Bucket: BUCKET,
             Key: key,
             PartNumber: Number(partNumber),
             UploadId: uploadId,
-    
         })
     
         const url = await getSignedUrl(s3, command, {
@@ -108,6 +107,7 @@ export const abortMultiPartUpload  = async (key, uploadId) => {
 
         return {success: true};
     } catch (error) {
+        console.log(error)
         console.log("abortMultiPartUpload: Error", error?.message)
         throw error;
     }

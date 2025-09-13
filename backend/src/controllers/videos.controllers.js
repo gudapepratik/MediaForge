@@ -17,7 +17,7 @@ export const getUploads = async (req, res, next) => {
         const pendingVideos = await prisma.video.findMany({
             where: {
                 AND: [
-                    {id: user.id},
+                    {userId: user.id},
                     {status: { notIn: ["READY", "UPLOADED"]}}
                 ]
             },
@@ -36,35 +36,43 @@ export const getUploads = async (req, res, next) => {
 
                 const totalParts = video.upload.uploadParts.length;
                 const completedParts = video.upload.uploadParts.filter(part => part.status === "COMPLETED");
-                const completedChunkSize = completedParts.reduce((sum, part) => sum + part.partSize, 0)
-                const completedPercentage = video.fileSize ? Math.round((Number(video.fileSize) / completedChunkSize) * 100) : 0;
+                const completedChunkSize = completedParts.reduce((sum, part) => sum + Number(part.partSize), 0)
+                const completedPercentage = video.fileSize ? Math.round((completedChunkSize / Number(video.fileSize)) * 100) : 0;
                 const remainingUploadSize = Number(video.fileSize) - completedChunkSize;
 
+                // return {
+                //     videoId: video.id,
+                //     fileName: video.fileName,
+                //     fileSize: Number(video.fileSize),
+                //     contentType: video.contentType,
+                //     status: video.status,
+                //     createdAt: video.createdAt,
+                //     updatedAt: video.updatedAt,
+
+                //     uploadId: video.upload.id,
+                //     s3UploadId: video.upload.uploadId,
+                //     uploadStatus: video.upload.status,
+                //     uploadCreatedAt: video.upload.createdAt,
+                //     uploadUpdatedAt: video.upload.updatedAt,
+
+                //     totalParts,
+                //     completedParts: completedParts.length,
+                //     remainingParts: totalParts - completedParts.length,
+                //     percentage: completedPercentage,
+                //     remainingUploadSize
+                // }
                 return {
-                    videoId: video.id,
-                    fileName: video.fileName,
-                    fileSize: Number(video.fileSize),
-                    contentType: video.contentType,
-                    status: video.status,
-                    createdAt: video.createdAt,
-                    updatedAt: video.updatedAt,
-
-                    uploadId: video.upload.id,
-                    s3UploadId: video.upload.uploadId,
-                    uploadStatus: video.upload.status,
-                    uploadCreatedAt: video.upload.createdAt,
-                    uploadUpdatedAt: video.upload.updatedAt,
-
-                    totalParts,
-                    completedParts: completedParts.length,
-                    remainingParts: totalParts - completedParts.length,
-                    percentage: completedPercentage,
-                    remainingUploadSize
+                  videoId: video.id,
+                  uploadId: video.upload.id,
+                  fileName: video.fileName,
+                  chunkSize: CHUNK_SIZE,
+                  totalParts,
+                  percentage: completedPercentage,
+                  status: video.upload.status.toLowerCase()
                 }
             })
             .filter(Boolean) // remove nulls
-
-        return res.status(200).json(new ApiResponse(200, uploads, "Upload fetched successfully"))
+        return res.status(200).json(new ApiResponse(200, {uploads}, "Upload fetched successfully"))
     } catch (error) {
         console.log("getUploads Error", error)
         return next(new ApiError(500, "Internal Server Error"))
@@ -96,8 +104,8 @@ export const getUploadById = async (req, res, next) => {
 
         const totalParts = upload.uploadParts.length;
         const completedParts = upload.uploadParts.filter(part => part.status === "COMPLETED");
-        const completedChunkSize = completedParts.reduce((sum, part) => sum + part.partSize, 0)
-        const completedPercentage = video.fileSize ? Math.round((Number(video.fileSize) / completedChunkSize) * 100) : 0;
+        const completedChunkSize = completedParts.reduce((sum, part) => sum + Number(part.partSize), 0)
+        const completedPercentage = video.fileSize ? Math.round((completedChunkSize / Number(video.fileSize)) * 100) : 0;
         const remainingUploadSize = Number(video.fileSize) - completedChunkSize;
 
         const data =  {
@@ -109,17 +117,18 @@ export const getUploadById = async (req, res, next) => {
           createdAt: video.createdAt,
           updatedAt: video.updatedAt,
 
-          uploadId: video.upload.id,
-          s3UploadId: video.upload.uploadId,
-          uploadStatus: video.upload.status,
-          uploadCreatedAt: video.upload.createdAt,
-          uploadUpdatedAt: video.upload.updatedAt,
+          uploadId: upload.id,
+          s3UploadId: upload.uploadId,
+          uploadStatus: upload.status,
+          uploadCreatedAt: upload.createdAt,
+          uploadUpdatedAt: upload.updatedAt,
 
           totalParts,
           completedParts: completedParts.length,
           remainingParts: totalParts - completedParts.length,
           percentage: completedPercentage,
-          remainingUploadSize
+          remainingUploadSize,
+          chunkSize: CHUNK_SIZE
         }
 
         return res.status(200).json(new ApiResponse(200, data, "Upload details fetched successfully"))
@@ -159,7 +168,7 @@ export const requestMultiPartUpload = async (req, res, next) => {
     try {
         const {fileName, fileSize, contentType, checksum} = req.body
         const user = req.user
-
+      console.log("eeee")
         if(!user)
             return next(new ApiError(401, "user not authenticated"))
 
@@ -194,7 +203,8 @@ export const requestMultiPartUpload = async (req, res, next) => {
                     fileName,
                     fileSize: Number(fileSize),
                     contentType,
-                    userId: user.id
+                    userId: user.id,
+                    hash: checksum
                 }
             })
 
@@ -212,7 +222,6 @@ export const requestMultiPartUpload = async (req, res, next) => {
                 data: {
                     uploadId: UploadId,
                     videoId: video.id,
-                    hash: checksum
                 }
             })
 
@@ -224,11 +233,11 @@ export const requestMultiPartUpload = async (req, res, next) => {
             }))
 
             // create parts
-            await prisma.uploadPart.createMany({
+            await tx.uploadPart.createMany({
                 data: parts
             })
 
-            return {uploadId: UploadId, videoId: video.id, key}
+            return {uploadId: upload.id, videoId: video.id, key}
         })
 
 
@@ -246,12 +255,7 @@ export const getPendingUploadParts = async (req,res,next) => {
         const {videoId} = req.params
 
         const upload = await prisma.upload.findUnique({
-            where: {
-                AND: [
-                    {videoId},
-                    {status: {not: "COMPLETED"}}
-                ]
-            },
+            where: {videoId: videoId},
             include: {
                 uploadParts: {
                     select: {
@@ -265,11 +269,16 @@ export const getPendingUploadParts = async (req,res,next) => {
                 }
             },
         })
-
+        
         if(!upload)
             return next(new ApiError(404, "Upload Not Found"))
+        
+        const serializedParts = upload.uploadParts.map(part => ({
+            ...part,
+            partSize: part.partSize.toString()
+        }))
 
-        return res.status(200).json(new ApiResponse(200, {parts: upload.uploadParts}, "Pending Upload Parts fetched successfully."))
+        return res.status(200).json(new ApiResponse(200, {parts: serializedParts}, "Pending Upload Parts fetched successfully."))
     } catch (error) {
         console.error("getUploadParts error:", error);
         return next(new ApiError(500, "Internal Server Error"))
@@ -283,7 +292,7 @@ export const createUploadPartPresignedUrl = async (req,res,next) => {
         const {partId,uploadId} = req.params;
 
         const response = await prisma.$transaction(async (tx) => {
-            const upload = tx.upload.findUnique({
+            const upload = await tx.upload.findUnique({
                 where: {id: uploadId},
                 include: {
                     uploadParts: {
@@ -294,18 +303,13 @@ export const createUploadPartPresignedUrl = async (req,res,next) => {
                             storageKey: true,
                         }
                     }
-                },
-                select: {
-                    uploadId: true,
-                    video: true,
-                    uploadParts: true
                 }
             })
     
             if(!upload)
                 return next(new ApiError(404, "Upload Not Found"))
     
-            const {url} = await createUploadPartUrl(upload.video.id,upload.uploadParts[0].partNo, upload.uploadId)
+            const {url} = await createUploadPartUrl(upload.video.storageKey ,upload.uploadParts[0].partNo, upload.uploadId)
 
             // mark the upload part as initiated
             await tx.uploadPart.update({
@@ -350,11 +354,13 @@ export const markUploadPartFailed = async (req,res,next) => {
 export const markUploadPartCompleted = async (req,res,next) => {
     try {
         const {partId} = req.params;
+        const {eTag} = req.body
 
         await prisma.uploadPart.update({
             where: {id: partId},
             data: {
-                status: "COMPLETED"
+                status: "COMPLETED",
+                eTag: eTag,
             }
         })
 
@@ -380,14 +386,11 @@ export const markVideoUploadCancelled = async (req,res,next) => {
                         uploadId: true
                     }
                 }
-            },
-            select: {
-                storageKey: true,
-                upload: true
             }
         })
 
         try {
+          console.log(video)
             await abortMultiPartUpload(video.storageKey, video.upload.uploadId);
         } catch (error) {
             return next(new ApiError(500, "markVideoUploadCancelled Error", error))
