@@ -18,7 +18,7 @@ export const getUploads = async (req, res, next) => {
             where: {
                 AND: [
                     {userId: user.id},
-                    {status: { notIn: ["READY", "UPLOADED"]}}
+                    {status: { equals: "CREATED"}} // not uploaded / failed / completed
                 ]
             },
             include: {
@@ -65,6 +65,7 @@ export const getUploads = async (req, res, next) => {
                   videoId: video.id,
                   uploadId: video.upload.id,
                   fileName: video.fileName,
+                  checkSum: video.hash,
                   chunkSize: CHUNK_SIZE,
                   totalParts,
                   percentage: completedPercentage,
@@ -158,6 +159,32 @@ export const getUploadStatus = async (req,res,next) => {
         return res.status(200).json(new ApiResponse(200, {...upload}, "Upload Status fetched successfully."))
     } catch (error) {
         console.error("getUploadStatus error:", error);
+        return next(new ApiError(500, "Internal Server Error"))
+    }
+}
+
+// update upload status
+// PATCH /upload-status/:videoId
+export const updateUploadStatus = async (req,res,next) => {
+    try {
+        const {videoId} = req.params
+        const {status} = req.body
+
+        if(!videoId && !status) return next(new ApiError(400, "missing data or Invalid request"))
+
+        const upload = await prisma.upload.update({
+            where: {videoId: videoId},
+            data: {
+              status: status.toUpperCase()
+            }
+        })
+
+        if(!upload)
+            return next(new ApiError(404, "Upload Not Found"))
+
+        return res.status(200).json(new ApiResponse(200, null, "Upload Status updated successfully."))
+    } catch (error) {
+        console.error("updateUploadStatus error:", error);
         return next(new ApiError(500, "Internal Server Error"))
     }
 }
@@ -273,6 +300,7 @@ export const getPendingUploadParts = async (req,res,next) => {
         if(!upload)
             return next(new ApiError(404, "Upload Not Found"))
         
+        // partSize if bigInt, thus need to be serialized
         const serializedParts = upload.uploadParts.map(part => ({
             ...part,
             partSize: part.partSize.toString()
@@ -390,7 +418,6 @@ export const markVideoUploadCancelled = async (req,res,next) => {
         })
 
         try {
-          console.log(video)
             await abortMultiPartUpload(video.storageKey, video.upload.uploadId);
         } catch (error) {
             return next(new ApiError(500, "markVideoUploadCancelled Error", error))

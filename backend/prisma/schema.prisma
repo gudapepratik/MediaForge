@@ -62,11 +62,12 @@ model video {
 }
 
 enum UPLOAD_STATE {
-  INITIATED
-  PAUSED
-  UPLOADING
-  COMPLETED
-  ABORTED
+  INITIATED // when first time the upload entry is created
+  PAUSED // when user pauses
+  UPLOADING // when parts are uploading
+  FAILED // network or any error
+  COMPLETED // when upload is completely done
+  ABORTED // when user cancels
 }
 
 model upload {
