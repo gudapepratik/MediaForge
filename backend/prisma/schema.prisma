@@ -63,6 +63,7 @@ model video {
 
 enum UPLOAD_STATE {
   INITIATED
+  PAUSED
   UPLOADING
   COMPLETED
   ABORTED
