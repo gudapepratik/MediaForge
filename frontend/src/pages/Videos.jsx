@@ -5,7 +5,6 @@ import VideoCard from '../components/VideoCard';
 function Videos() {
   const [videos, setVideos] = useState([]);
 
-
   return (
     <>
       <div className='w-[calc(100%-25%)] bg-zinc-500'>
