@@ -13,6 +13,7 @@ import Home from "./pages/Home.jsx";
 import Login from './pages/Login.jsx'
 import Uploads from './pages/Uploads.jsx'
 import Videos from './pages/Videos.jsx'
+import {UploadProvider} from './contexts/UploadContext.jsx'
 
 const router = createBrowserRouter(
   createRoutesFromElements(
@@ -46,7 +47,9 @@ createRoot(document.getElementById("root")).render(
   <StrictMode>
     <Provider store={store}>
       <CheckAuth>
-        <RouterProvider router={router}/>
+        <UploadProvider>
+          <RouterProvider router={router}/>
+        </UploadProvider>
       </CheckAuth>
     </Provider>
   </StrictMode>

@@ -461,6 +461,19 @@ export const markMultiPartUploadComplete = async (req,res,next) => {
     try {
         const {videoId} = req.params
 
+        // check for incomplete part
+        const incompletePart = await prisma.upload.findUnique({
+          where: {videoId: videoId},
+          include: {
+            uploadParts: {
+              where: {status: {notIn: ['COMPLETED']}}
+            }
+          }
+        })
+
+        if(incompletePart.uploadParts.length > 0)
+          throw new ApiError(400, "Some parts are not yet uploaded or failed")
+
         const upload = await prisma.upload.findUnique({
             where: {videoId: videoId},
             include: {

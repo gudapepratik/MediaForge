@@ -72,7 +72,11 @@ export default class UploadQueue {
       if (this.onPartComplete) this.onPartComplete(item);
     } catch (err) {
       this.controllers.delete(item.partId);
-      if (err.name === "AbortError") return;
+      if (err.name === "AbortError") {
+        // push the aborted part again in front of queue
+        this.queue.unshift(item);
+        return;
+      }
       if (this.onPartFailed) this.onPartFailed(item, err);
     }
   }
