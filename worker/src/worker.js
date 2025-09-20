@@ -10,34 +10,47 @@ const connection = new IORedis({
   password: process.env.REDIS_PASSWORD,
 })
 
-const worker = new Worker('transcode-queue', async (job) => {
-  // handle the worker job
-  console.log(`Processing Job ${job.id}`, job.data);
+export function createWorker() {
+  const worker = new Worker('transcode-queue', async (job) => {
+    // handle the worker job
+    console.log(`Processing Job ${job.id}`, job.data);
+  
+    await transcodeVideo(...job.data);
+  
+    console.log(`JOB DONE ${job.id}`)
+  
+    return {status: 'done', videoPath: 'something here'}
+  }, {connection, lockDuration: 30 * 60 * 1000, concurrency: 2})
+  
+  const queueEvents = new QueueEvents('transcode-queue', {connection});
+  
+  queueEvents.on('completed', ({ jobId, returnvalue }) => {
+    console.log('Job completed event');
+  });
+  
+  queueEvents.on('failed', ({ jobId, failedReason }) => {
+    console.log('Job failed event');
+  });
+  
+  queueEvents.on('progress', ({ jobId, data }) => {
+    console.log('Job progress event');
+  });
+  
+  worker.on('error', (err) => {
+    console.error('Worker error');
+  });
 
-  await transcodeVideo(...job.data);
+  const shutdown = async () => {
+    logger.info('Graceful shutdown worker');
+    await worker.close();
+    await queueEvents.close();
+    await connection.quit();
+    process.exit(0);
+  };
 
-  console.log(`JOB DONE ${job.id}`)
+  process.on('SIGINT', shutdown);
+  process.on('SIGTERM', shutdown);
 
-  return {status: 'done', videoPath: 'something here'}
-}, {connection, lockDuration: 30 * 60 * 1000, concurrency: 2})
-
-const queueEvents = new QueueEvents('transcode-queue', {connection});
-
-queueEvents.on('completed', ({ jobId, returnvalue }) => {
-  console.log('Job completed event');
-});
-
-queueEvents.on('failed', ({ jobId, failedReason }) => {
-  console.log('Job failed event');
-});
-
-queueEvents.on('progress', ({ jobId, data }) => {
-  console.log('Job progress event');
-});
-
-worker.on('error', (err) => {
-  console.error('Worker error');
-});
-
-export default worker
+  return {worker, queueEvents};
+}
 
