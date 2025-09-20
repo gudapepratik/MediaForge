@@ -27,6 +27,7 @@ services:
       - backend_node_modules:/app/node_modules
     depends_on:
       - postgres
+      - redis
   
   frontend:
     build: 
@@ -62,7 +63,11 @@ services:
       dockerfile: ../docker/worker.Dockerfile
     container_name: worker
     env_file: ./.env
+    volumes:
+    - ./worker:/app
+    - worker_node_modules:/app/node_modules
     depends_on:
+      - backend
       - redis
   
   bull-board:
@@ -70,7 +75,12 @@ services:
     container_name: mediaforge-bullboard
     ports:
     - "5000:3000"
-    env_file: ./.env
+    environment:
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      REDIS_PASSWORD: ${REDIS_PASSWORD}
+      USER_LOGIN: admin
+      USER_PASSWORD: bullpass
     depends_on:
       - redis
 
@@ -79,3 +89,4 @@ volumes:
   postgres_data:
   backend_node_modules:
   frontend_node_modules:
+  worker_node_modules:

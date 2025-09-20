@@ -9,7 +9,7 @@ import { createWorker } from './src/worker.js';
     createWorker();
     console.log("Worker running,.. waiting for jobs...")
   } catch (error) {
-    console.log("Failed to start worker.")
+    console.error("Failed to start worker.", error)
     process.exit(1);
   }
-})();
+})();   
