@@ -64,7 +64,15 @@ services:
     env_file: ./.env
     depends_on:
       - redis
-
+  
+  bull-board:
+    image: 'venatum/bull-board:latest'
+    container_name: mediaforge-bullboard
+    ports:
+    - "5000:3000"
+    env_file: ./.env
+    depends_on:
+      - redis
 
 volumes:
   redis_data:

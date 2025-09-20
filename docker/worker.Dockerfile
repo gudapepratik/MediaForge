@@ -1,10 +1,11 @@
 FROM node:22-alpine
 
-WORKDIR /usr/src/app
+WORKDIR /app
 
-COPY worker/package*.json ./
-RUN npm install --only=production
+COPY package*.json ./
 
-COPY worker/ .
+RUN npm install
 
-CMD ["node", "index.js"]
+COPY . .
+
+CMD ["npm", "run", "dev"]

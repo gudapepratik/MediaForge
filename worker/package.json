@@ -6,7 +6,7 @@
   "type": "module",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "node index.js"
+    "dev": "nodemon --legacy-watch index.js"
   },
   "keywords": [],
   "author": "",
@@ -14,6 +14,7 @@
   "dependencies": {
     "bullmq": "^5.58.6",
     "dotenv": "^17.2.2",
-    "ioredis": "^5.7.0"
+    "ioredis": "^5.7.0",
+    "nodemon": "^3.1.10"
   }
 }
