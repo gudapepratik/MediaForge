@@ -12,6 +12,7 @@ const connection = new IORedis({
 
 connection.on('connect', () => console.log("REDIS CONNECTED"))
 connection.on('error', (err) => console.error("REDIS CONNECTION ERROR", err))
+connection.on('close', () => console.log('REDIS CONNECTION CLOSED'))
 
 export default connection;
 

@@ -1,0 +1,2 @@
+-- AlterEnum
+ALTER TYPE "public"."UPLOAD_STATE" ADD VALUE 'FAILED';

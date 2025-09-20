@@ -1,9 +1,9 @@
 import {Queue} from 'bullmq'
-import connection from '../config/redis'
+import connection from '../config/redis.js'
 
 // BULL DOCS - https://api.docs.bullmq.io/classes/v5.QueueEvents.html
 
-export const videoQueue = new Queue('video-transcode', {
+export const transcodingQueue = new Queue('transcode-queue', {
   connection,
   defaultJobOptions: {
     removeOnComplete: 100, // keep last 100 completed jobs
@@ -15,4 +15,5 @@ export const videoQueue = new Queue('video-transcode', {
     } 
   }
 });
+
 

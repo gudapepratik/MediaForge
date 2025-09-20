@@ -2,6 +2,7 @@ import { prisma } from "../config/db.js"
 import { abortMultiPartUpload, completeMultiPartUpload, createMultiPartUpload, createUploadObjectUrl, createUploadPartUrl} from "../config/s3Client.js"
 import { ApiError } from "../utils/ApiError.js"
 import { ApiResponse } from "../utils/ApiResponse.js"
+import {addToTranscodingQueue} from "../producers/videotranscode.producer.js"
 
 const CHUNK_SIZE = 10 * 1024 * 1024; // 10 mb chunksize
 
@@ -195,7 +196,7 @@ export const requestMultiPartUpload = async (req, res, next) => {
     try {
         const {fileName, fileSize, contentType, checksum} = req.body
         const user = req.user
-      console.log("eeee")
+        
         if(!user)
             return next(new ApiError(401, "user not authenticated"))
 
@@ -456,7 +457,7 @@ export const markVideoUploadCancelled = async (req,res,next) => {
 }
 
 // completes the multi part upload for given video
-// c
+// PUT /complete-multipart-upload/:videoId
 export const markMultiPartUploadComplete = async (req,res,next) => {
     try {
         const {videoId} = req.params
@@ -525,6 +526,7 @@ export const markMultiPartUploadComplete = async (req,res,next) => {
         })
 
         // last step - add to processing queue
+        // addToTranscodingQueue({videoId: videoId});
 
         return res.status(200).json(new ApiResponse(200, {url: s3Response.Location}, "Video uploaded successfully, transcoding in progress.."))
     } catch (error) {
