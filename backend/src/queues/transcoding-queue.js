@@ -3,7 +3,7 @@ import connection from '../config/redis.js'
 
 // BULL DOCS - https://api.docs.bullmq.io/classes/v5.QueueEvents.html
 
-export const transcodingQueue = new Queue('transcode-queue', {
+export const transcodingQueue = new Queue(process.env.TRANSCODE_QUEUE, {
   connection,
   defaultJobOptions: {
     removeOnComplete: 100, // keep last 100 completed jobs

@@ -526,7 +526,7 @@ export const markMultiPartUploadComplete = async (req,res,next) => {
         })
 
         // last step - add to processing queue
-        // addToTranscodingQueue({videoId: videoId, userId: user.id});
+        // addToTranscodingQueue({key: });
 
         return res.status(200).json(new ApiResponse(200, {url: s3Response.Location}, "Video uploaded successfully, transcoding in progress.."))
     } catch (error) {
