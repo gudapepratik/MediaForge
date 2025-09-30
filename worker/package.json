@@ -5,16 +5,18 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "nodemon --legacy-watch index.js"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "bullmq": "^5.58.6",
+    "@aws-sdk/client-s3": "^3.893.0",
+    "bullmq": "^5.58.9",
     "dotenv": "^17.2.2",
-    "ioredis": "^5.7.0",
+    "ffmpeg-static": "^5.2.0",
+    "ffprobe-static": "^3.1.0",
+    "ioredis": "^5.8.0",
     "nodemon": "^3.1.10"
   }
 }
