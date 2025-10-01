@@ -264,7 +264,7 @@ async function uploadHlsToR2(userId, videoId, progressUpdater) {
     console.log("Error occcurred ")
     throw error;
   }
-}
+} 
 
 async function cleanupTempFiles(progressUpdater = null, sendUpdates = true) {
   console.log("Cleaning up temporary files...")
@@ -291,25 +291,24 @@ async function cleanupTempFiles(progressUpdater = null, sendUpdates = true) {
 }
 
 export default async function(job) {
+  // Key = `videos/${userId}/${videoId}/original/${fileName}`
+  let {key} = job.data;
+
+  const keyData = key.split('/');
+  const userId = keyData[1];
+  const videoId = keyData[2];
+  const fileName = keyData[4];
+
+  const progressUpdater = new ProgressUpdate(redis, job.id, videoId, userId, job);
   try {
-    // Key = `videos/${userId}/${videoId}/original/${fileName}`
-    let {key} = job.data;
-  
-    const keyData = key.split('/');
-    const userId = keyData[1];
-    const videoId = keyData[2];
-    const fileName = keyData[4];
-  
-    const progressUpdater = new ProgressUpdate(redis, job.id, videoId, userId, job);
-  
     // 1. download video from r2 and store locally 
     // await downloadVideo(key, progressUpdater);
     
     // 2. perform transcoding of the file
-    // await transcode(progressUpdater);
+    await transcode(progressUpdater);
   
     // 3. upload all the files to public R2 bucket
-    await uploadHlsToR2(userId, videoId, progressUpdater);
+    // await uploadHlsToR2(userId, videoId, progressUpdater);
   
     // 4. delete temp files from local storage (cleanup)
     await cleanupTempFiles(progressUpdater);
@@ -317,9 +316,10 @@ export default async function(job) {
     await progressUpdater.sendPubSubUpdate('completed', 100, "Transcoding completed successfully, your file is now ready...");
   } catch (error) {
     console.error(`Error occurred while transcoding for JOb ${job.id}`, error);
-    // await cleanupTempFiles(null, false);
+    await cleanupTempFiles(null, false);
+    await progressUpdater.sendPubSubUpdate('failed', 0, `Error occurred while transcoding ${job.id}`);
     throw error;   
-  }
+  }  
 }
 
 // HELPER FUNCTIONS

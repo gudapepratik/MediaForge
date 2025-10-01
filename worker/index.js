@@ -20,7 +20,7 @@ const processorFile = path.join(__dirname, 'job-processor.js');
 const worker = new Worker(QUEUE_NAME, processorFile, {
   connection: redis,
   concurrency: 1,
-  lockDuration: 3000,
+  lockDuration: 600000,
   removeOnComplete: {count: 100}, // keep 100 recently completed jobs in completed set
   removeOnFail: {count: 1000} // keep 1000 recently failed jobs in failed set
 })

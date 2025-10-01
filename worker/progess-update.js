@@ -6,7 +6,7 @@
     additional data
     }
 */
-
+        
 export class ProgressUpdate {
   constructor(redisClient, jobId, videoId, userId, job) {
     this.redis = redisClient

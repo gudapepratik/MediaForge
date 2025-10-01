@@ -5,7 +5,7 @@ import { ApiResponse } from "../utils/ApiResponse.js"
 import {addToTranscodingQueue} from "../producers/videotranscode.producer.js"
 
 const CHUNK_SIZE = 10 * 1024 * 1024; // 10 mb chunksize
-
+   
 // fetches uploads information of a given user
 // GET /pending-uploads
 export const getUploads = async (req, res, next) => {
@@ -514,19 +514,19 @@ export const markMultiPartUploadComplete = async (req,res,next) => {
                 data: {
                     status: "UPLOADED",
                 }
-            })
-
+            })  
+  
             // keep it until video transcoding is completed
             await tx.upload.update({
                 where: {id: upload.id},
                 data: {
                     status: "COMPLETED"
                 }
-            })
+            })  
         })
 
         // last step - add to processing queue
-        // addToTranscodingQueue({key: });
+        await addToTranscodingQueue({key: key});
 
         return res.status(200).json(new ApiResponse(200, {url: s3Response.Location}, "Video uploaded successfully, transcoding in progress.."))
     } catch (error) {

@@ -7,7 +7,7 @@ connectDB()
     app.listen(port, () => {
         console.log(`Server running on port ${port || 3000}`)
     })
-})
+})    
 .catch((error) => {
     console.log("Error occurred while connecting to Postgres")
-})
+})  

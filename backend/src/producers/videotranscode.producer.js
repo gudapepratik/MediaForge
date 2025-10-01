@@ -5,6 +5,6 @@ export const addToTranscodingQueue = async (metadata) => {
   const job = await transcodingQueue.add('transcode-video', metadata)
 
   console.log(`New job added to transcoding queue: ${job.id}`)
-  return job.id;
+  return job.id;   
 }
 

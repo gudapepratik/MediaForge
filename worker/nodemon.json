@@ -1,0 +1,11 @@
+{
+  "watch": ["."],
+  "ignore": [
+    "*.mp4",
+    "output/**",
+    "node_modules/**"
+  ],
+  "ext": "js,json",
+  "legacyWatch": true
+}
+
