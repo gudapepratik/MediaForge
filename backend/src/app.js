@@ -8,11 +8,23 @@ import cors from 'cors'
 import router from './routes/route.js'
 import './config/dotenv.js'
 import './config/passport.js'
+import './subscribers/transcode-updates.subscriber.js'
 import { ApiError } from './utils/ApiError.js'
 
 const app = express();
 const pgPool = new pg.Pool({connectionString: process.env.DATABASE_URL})
 const pgSession = connectPgSimple(session)
+
+const sessionMiddleware = session({
+    store: new pgSession({
+        pool: pgPool,
+        tableName: 'session',
+    }),
+    secret: process.env.SESSION_SECRET,
+    resave: false,
+    saveUninitialized: false,
+    cookie: {maxAge: 30 * 24 * 60 * 60 * 1000} // 30days
+})
 
 app.use(cors({
     credentials: true,
@@ -36,16 +48,7 @@ app.use(express.urlencoded({
 
 app.use(express.static('public'));
 
-app.use(session({
-    store: new pgSession({
-        pool: pgPool,
-        tableName: 'session',
-    }),
-    secret: process.env.SESSION_SECRET,
-    resave: false,
-    saveUninitialized: false,
-    cookie: {maxAge: 30 * 24 * 60 * 60 * 1000} // 30days
-}))
+app.use(sessionMiddleware);
 
 app.use(passport.initialize())
 app.use(passport.session())
@@ -71,4 +74,4 @@ app.use((err, req, res, next) => {
     }
 });
 
-export default app;
+export {app, sessionMiddleware};
