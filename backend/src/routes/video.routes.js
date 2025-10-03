@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { checkAuth } from "../middlewares/auth.middleware.js";
-import { createUploadPartPresignedUrl, getPendingUploadParts, getUploadById, getUploads, getUploadStatus, markMultiPartUploadComplete, markUploadPartCompleted, markUploadPartFailed, markVideoUploadCancelled, markVideoUploadFailed, markVideoUploadSuccess, requestMultiPartUpload, requestVideoUpload, updateUploadStatus } from "../controllers/videos.controllers.js";
+import { createUploadPartPresignedUrl, getPendingUploadParts, getTranscodes, getUploadById, getUploads, getUploadStatus, markMultiPartUploadComplete, markUploadPartCompleted, markUploadPartFailed, markVideoUploadCancelled, markVideoUploadFailed, markVideoUploadSuccess, requestMultiPartUpload, requestVideoUpload, updateUploadStatus } from "../controllers/videos.controllers.js";
 
 const router = Router()
 
@@ -11,6 +11,7 @@ router.post('/mark-upload-fail/:videoId', checkAuth, markVideoUploadFailed);
 router.post('/create-multipart-upload-request', checkAuth, requestMultiPartUpload);
 router.get('/pending-uploads/:uploadId', checkAuth, getUploadById);
 router.get('/pending-uploads', checkAuth, getUploads);
+router.get('/pending-transcodes', checkAuth, getTranscodes);
 router.get('/upload-status/:videoId', checkAuth, getUploadStatus);
 router.patch('/upload-status/:videoId', checkAuth, updateUploadStatus);
 router.get('/pending-upload-parts/:videoId', checkAuth, getPendingUploadParts);

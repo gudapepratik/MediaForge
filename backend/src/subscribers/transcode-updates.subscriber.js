@@ -36,8 +36,18 @@ subscriber.on('pmessage', async (p, ch, msg) => {
   // 1. parse the message to json
   const data = JSON.parse(msg);
 
-  // 2. send critical updates to database (completed, failed)
-  if(data.stage === 'completed' || data.stage === 'failed') {
+  // 2. update db when worker picks job
+  if(data?.stage === 'started') {
+    await prisma.video.update({
+      where: {id: data.videoId},
+      data: {
+        status: 'PROCESSING'
+      }
+    })
+  }
+
+  // // 3. send critical updates to database (completed, failed)
+  if(data?.stage === 'completed' || data?.stage === 'failed') {
     const newStatus = data.stage === 'completed' ? "READY" : "FAILED";
     await prisma.video.update({
       where: {id: data.videoId},
@@ -55,8 +65,9 @@ subscriber.on('pmessage', async (p, ch, msg) => {
     }
   }
 
-  // 3. send update to socketio clients in room$jobId
-  io.to(data.jobId).emit('transcode-update', data);
+  // 4. send update to socketio clients in user:userId room
+  console.log(data);
+  io.to(`user:${data.userId}`).emit('transcode-update', data);
   
   console.log(`message recieved from channel ${ch}`);
 })

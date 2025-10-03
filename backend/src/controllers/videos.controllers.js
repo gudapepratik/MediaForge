@@ -5,7 +5,7 @@ import { ApiResponse } from "../utils/ApiResponse.js"
 import {addToTranscodingQueue} from "../producers/videotranscode.producer.js"
 
 const CHUNK_SIZE = 10 * 1024 * 1024; // 10 mb chunksize
-   
+
 // fetches uploads information of a given user
 // GET /pending-uploads
 export const getUploads = async (req, res, next) => {
@@ -79,6 +79,32 @@ export const getUploads = async (req, res, next) => {
         console.log("getUploads Error", error)
         return next(new ApiError(500, "Internal Server Error"))
     }
+}
+
+// fetches pending transcodes of a given user
+// GET /pending-transcodes
+export const getTranscodes = async (req, res, next) => {
+  try {
+    const user = req.user;
+
+    if(!user)
+      return next(new ApiError(404, "User Not Found"))
+
+    const videos = await prisma.video.findMany({
+      where: {
+        userId: user.id,
+        status: {in: ['UPLOADED', 'PROCESSING']}
+      },
+      orderBy: {
+        createdAt: 'desc'
+      }
+    })
+
+    return res.status(200).json(new ApiResponse(200, {videos}, "Pending transcodes fetched successfully"))
+  } catch (error) {
+    console.log("getTranscodes Error", error)
+    return next(new ApiError(500, "Internal Server Error"))
+  }
 }
 
 // fetches uploads information of a given user and specific upload

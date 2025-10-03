@@ -104,6 +104,8 @@ export function useUploadManager() {
         await axios.put(`${evnConfig.BACKEND_ENDPOINT}/api/videos/complete-multipart-upload/${uploadMeta.videoId}`,null, {withCredentials: true} );
         updateUploadLocal(uploadMeta.videoId, { status: "completed", percentage: 100 });
         queuesRef.current.delete(uploadMeta.videoId); // remove upload task from queue
+        // wait... remove the completed upload from uploads
+        // setUploads((uploads) => uploads.filter(upload => upload.videoId !== uploadMeta.videoId));
       } catch (err) {
         console.error(`FAILED: Complete upload for videoId ${uploadMeta.videoId}`, err);
         updateUploadLocal(uploadMeta.videoId, { status: "failed" });
@@ -233,6 +235,7 @@ export function useUploadManager() {
 
   return {
     uploads,
+    setUploads,
     createAndStartUpload,
     startUploadWithFile, // resume with file
     pauseUpload,

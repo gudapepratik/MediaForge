@@ -7,7 +7,7 @@ function Videos() {
 
   return (
     <>
-      <div className='w-[calc(100%-25%)] bg-zinc-500'>
+      <div className='w-[calc(80%)] bg-zinc-500'>
         {/* TOP SECTION*/}
         <VideoUpload/>
 

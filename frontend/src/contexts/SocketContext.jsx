@@ -5,7 +5,6 @@ import { useContext } from "react";
 import { createContext } from "react";
 import { io } from "socket.io-client";
 import config from "../../config";
-import { useSelector } from "react-redux";
 
 export const SocketContext = createContext(null);
 
@@ -28,14 +27,14 @@ export const SocketProvider = ({children}) => {
     socket.on('disconnect', () => {
       console.log('Socket client disconnected');
     })
-
+    
     socket.emit('joinUserRoom', (res) => {
       if(res?.ok) {
         console.log("Socket client joined User Room");
         setIsConnected(true);
       } else console.log('Error occurred while joining user Room');
     })
-
+    
     return () => {
       socket.emit('leaveUserRoom');
       socket.close();

@@ -41,7 +41,7 @@ function Uploads() {
 
   return (
     <>
-      <div className='w-[calc(75%)]'>
+      <div className='w-[calc(80%)]'>
         <div className="w-full px-4 py-6 text-white">
           <div className="mb-4 flex items-center justify-between bg-zinc-700 p-4 rounded-md border-2 border-zinc-500">
             <h1 className="text-balance text-2xl font-semibold">Uploads</h1>
