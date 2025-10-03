@@ -14,6 +14,7 @@ import Login from './pages/Login.jsx'
 import Uploads from './pages/Uploads.jsx'
 import Videos from './pages/Videos.jsx'
 import {UploadProvider} from './contexts/UploadContext.jsx'
+import { SocketProvider } from "./contexts/SocketContext.jsx";
 
 const router = createBrowserRouter(
   createRoutesFromElements(
@@ -46,11 +47,13 @@ const CheckAuth = ({ children }) => {
 createRoot(document.getElementById("root")).render(
   <StrictMode>
     <Provider store={store}>
-      <CheckAuth>
-        <UploadProvider>
-          <RouterProvider router={router}/>
-        </UploadProvider>
-      </CheckAuth>
+      <SocketProvider>
+        <CheckAuth>
+          <UploadProvider>
+            <RouterProvider router={router}/>
+          </UploadProvider>
+        </CheckAuth>
+      </SocketProvider>
     </Provider>
   </StrictMode>
 );
