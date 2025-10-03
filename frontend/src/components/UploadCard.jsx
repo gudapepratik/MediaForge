@@ -1,8 +1,12 @@
 import { useState } from "react"
 import { useUpload } from "../Hooks/useUpload"
+import { useEffect } from "react";
+import { useUploadProgress } from "../Hooks/useUploadProgress";
 
 export default function UploadCard({ meta }) {
-  const { pauseUpload, resumeUpload, cancelUpload } = useUpload()
+  const { pauseUpload, resumeUpload, cancelUpload } = useUpload();
+  const {progress, updateData, updateMessage} = meta.status === 'transcoding' ? useUploadProgress() : {progress: 0, updateMessage: null, updateData: null}
+
   const [localFile, setLocalFile] = useState(null)
   const [awaitingFileSelection, setAwaitingFileSelection] = useState(false)
 
@@ -41,6 +45,10 @@ export default function UploadCard({ meta }) {
       }
     }
   }
+
+  useEffect(() => {
+
+  }, [meta?.status])
 
   const getStatusIcon = () => {
     switch (meta.status) {
