@@ -49,6 +49,8 @@ function TranscodesContainer() {
         setTimeout(() => {
           setVideos(videos => videos.filter(v => v.id !== videoId));
         }, 4000);
+        
+        // now user can go to /videos section
         return;
       }
 
@@ -57,13 +59,13 @@ function TranscodesContainer() {
   }, [])
 
   const onCancel = (videoId) => {
-
+    console.log('Yet to be implemented!')
   }
   
   return (
     <>
       <div className='w-full grid grid-cols-3 gap-3'>
-        {videos.map((video, key) => (
+        {videos.map((video) => (
           <div key={video.id} className="w-full max-w-sm mx-auto bg-white rounded-2xl shadow-md hover:shadow-xl transition-shadow duration-300 overflow-hidden border border-gray-200">
             {/* Thumbnail */}
             <div className="relative w-full h-40 bg-gray-100 flex items-center justify-center">

@@ -561,6 +561,35 @@ export const markMultiPartUploadComplete = async (req,res,next) => {
     }
 }
 
+
+// <------------------ NORMAL VIDEO CONTROLLERS ------------------->
+
+// get completely ready to stream videos of an user
+// GET /api/videos/get-ready-videos
+export const getReadyVideos = async (req, res, next) => {
+  try {
+    const user = req.user;
+
+    if(!user) 
+      throw new ApiError(402, "User not found");
+
+    const videos = await prisma.video.findMany({
+      where: {
+        userId: user.id,
+        status: {equals: 'READY'}
+      },
+      orderBy: {
+        createdAt: 'desc'
+      }
+    })
+
+    return res.status(200).json(new ApiResponse(200, {videos}, "Videos fetched successfully"));
+  } catch (error) {
+    console.log("getReadyVideos Error", error)
+    return next(new ApiError(500, "Internal Server Error"))
+  }
+}
+
 // stale
 export const requestVideoUpload = async (req, res, next) => {
     try {

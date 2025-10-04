@@ -259,6 +259,8 @@ async function uploadHlsToR2(userId, videoId, progressUpdater) {
       await progressUpdater.sendPubSubUpdate('uploading HLS', Math.round(currentProgress), `uploaded ${i+1} of ${totalFiles} files..`);
       console.log(`${file} is uploaded to public bucket`)
     }
+    const masterKey = `videos/${userId}/${videoId}/hls/master.m3u8`;
+    return {masterKey};
   } catch (error) {
     await progressUpdater.sendPubSubUpdate('uploading HLS', Math.round(currentProgress), `Error occurred while uploading HLS files`);
     console.log("Error occcurred ")
@@ -308,16 +310,16 @@ export default async function(job) {
     await transcode(progressUpdater);
   
     // 3. upload all the files to public R2 bucket
-    // await uploadHlsToR2(userId, videoId, progressUpdater);
+    //const {masterKey} = await uploadHlsToR2(userId, videoId, progressUpdater);
   
     // 4. delete temp files from local storage (cleanup)
     await cleanupTempFiles(progressUpdater);
 
-    await progressUpdater.sendPubSubUpdate('completed', 100, "Transcoding completed successfully, your file is now ready...");
+    await progressUpdater.sendPubSubUpdate('completed', 100, "Transcoding completed successfully, your file is now ready...", {key: masterKey});
   } catch (error) {
     console.error(`Error occurred while transcoding for JOb ${job.id}`, error);
     await cleanupTempFiles(null, false);
-    await progressUpdater.sendPubSubUpdate('failed', 0, `Error occurred while transcoding ${job.id}`);
+    await progressUpdater.sendPubSubUpdate('failed', 0, `Error occurred while transcoding video ${videoId}, JOB ${job.id}`, {key});
     throw error;   
   }  
 }

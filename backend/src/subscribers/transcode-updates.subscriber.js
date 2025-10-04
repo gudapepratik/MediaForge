@@ -46,14 +46,15 @@ subscriber.on('pmessage', async (p, ch, msg) => {
     })
   }
 
-  // // 3. send critical updates to database (completed, failed)
+  // 3. send critical updates to database (completed, failed)
   if(data?.stage === 'completed' || data?.stage === 'failed') {
     const newStatus = data.stage === 'completed' ? "READY" : "FAILED";
+
     await prisma.video.update({
       where: {id: data.videoId},
       data: {
         status: newStatus,
-        storageKey: data.metadata.key // new public key
+        storageKey: data.metadata.key // new public key if status is ready else existing value
       }
     })
 
