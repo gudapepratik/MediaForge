@@ -4,6 +4,7 @@ import VideoCard from '../components/VideoCard';
 import { useEffect } from 'react';
 import axios from 'axios';
 import config from '../../config';
+import VideoPlayer from '../components/VideoPlayer';
 
 function Videos() {
   const [videos, setVideos] = useState([]);
@@ -15,12 +16,6 @@ function Videos() {
     responsive: true,
     fluid: true,
     preload: "auto",
-    sources: [
-      {
-        src: "https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8",
-        type: "application/x-mpegURL",
-      },
-    ],
   };
 
   const fetchVideos = async () => {
@@ -57,12 +52,13 @@ function Videos() {
           <div className='w-full grid grid-cols-3 p-4 gap-4 h-screen '>
             {videos && (
               videos.map((video, key) => (
-                <VideoCard key={key} video={video} options={video.hlsOptions}/>
+                <VideoPlayer key={key} videoUrl={video.hlsOptions.sources[0].src} title={video.fileName} />
               ))
             )}
           </div>
         )}
 
+        {/* <VideoCard key={key} video={video} options={video.hlsOptions}/> */}
       </div>
     </>
   )
