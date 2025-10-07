@@ -49,10 +49,10 @@ function Videos() {
         {isLoading ? (
           <div>Loading videos....</div>
         ): (
-          <div className='w-full grid grid-cols-3 p-4 gap-4 h-screen '>
+          <div className='w-full grid grid-cols-3 p-4 gap-4 '>
             {videos && (
               videos.map((video, key) => (
-                <VideoPlayer key={key} videoUrl={video.hlsOptions.sources[0].src} title={video.fileName} />
+                <VideoPlayer variant='compact' key={key} videoUrl={video.hlsOptions.sources[0].src} title={video.fileName} />
               ))
             )}
           </div>

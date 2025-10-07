@@ -304,13 +304,13 @@ export default async function(job) {
   const progressUpdater = new ProgressUpdate(redis, job.id, videoId, userId, job);
   try {
     // 1. download video from r2 and store locally 
-    // await downloadVideo(key, progressUpdater);
+    await downloadVideo(key, progressUpdater);
     
     // 2. perform transcoding of the file
     await transcode(progressUpdater);
   
     // 3. upload all the files to public R2 bucket
-    //const {masterKey} = await uploadHlsToR2(userId, videoId, progressUpdater);
+    const {masterKey} = await uploadHlsToR2(userId, videoId, progressUpdater);
   
     // 4. delete temp files from local storage (cleanup)
     await cleanupTempFiles(progressUpdater);
