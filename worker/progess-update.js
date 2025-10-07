@@ -8,12 +8,13 @@
 */
         
 export class ProgressUpdate {
-  constructor(redisClient, jobId, videoId, userId, job) {
+  constructor(redisClient, eventProducer, jobId, videoId, userId, job) {
     this.redis = redisClient
     this.jobId = jobId
     this.job = job
     this.videoId = videoId
     this.userId = userId
+    this.queueEventProducer = eventProducer
   }
 
   async sendPubSubUpdate(stage, progress,message,  metadata = {}) {
@@ -33,6 +34,26 @@ export class ProgressUpdate {
       console.log(`Real-time update sent: ${stage} - ${progress}%`);
     } catch (error) {
       console.error('Redis pub/sub failed (non-critical):', error);
+    }
+  }
+
+  async publishQueueEvent(stage, progress,message,  metadata = {}) {
+    const updateData = {
+      jobId: this.jobId,
+      userId: this.userId,
+      videoId: this.videoId,
+      stage,
+      progress,
+      message,
+      timeStamp: new Date().toISOString(),
+      metadata
+    }
+
+    try {
+      await this.queueEventProducer.publishEvent({eventName: `video-transcode-update`, data: JSON.stringify(updateData)});
+      console.log(`Queue Event update published: ${stage} - ${progress}%`);
+    } catch (error) {
+      console.error('Queue event failed:', error);
     }
   }
 

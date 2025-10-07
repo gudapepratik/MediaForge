@@ -1,4 +1,4 @@
-import {GetObjectCommand, PutObjectCommand} from '@aws-sdk/client-s3'
+import {GetObjectCommand, PutObjectCommand, DeleteObjectCommand} from '@aws-sdk/client-s3'
 import ffmpegPath from 'ffmpeg-static'
 import path from 'node:path'
 import fs from 'fs'
@@ -8,6 +8,7 @@ import { exec, execFile } from 'node:child_process'
 import ffprobe from 'ffprobe-static'
 import s3Client from './s3.js'
 import { ProgressUpdate } from './progess-update.js'
+import queueEventProducer from './queueEventProducer.js'
 import redis from './redis.js'
 
 dotenv.config();
@@ -53,7 +54,7 @@ async function getVideoMetadata(filePath) {
 
 async function downloadVideo(key, progressUpdater) {
   try {
-    await progressUpdater.sendPubSubUpdate('downloading', 5, "Video download has started..");
+    await progressUpdater.publishQueueEvent('downloading', 5, "Video download has started..");
 
     const downloadCommand = new GetObjectCommand({
       Bucket: PRIVATE_BUCKET,
@@ -71,7 +72,7 @@ async function downloadVideo(key, progressUpdater) {
       await new Promise((resolve, reject) => {
         writeStream.on('finish', () => {
           console.log("Video is downlaoded from S3");
-          progressUpdater.sendPubSubUpdate('downloading', 20, "Video downloaded..");
+          progressUpdater.publishQueueEvent('downloading', 20, "Video downloaded..");
           resolve();
         });
 
@@ -94,7 +95,7 @@ async function transcode(progressUpdater) {
       fs.mkdirSync(outputDir, {recursive: true});
     }
   
-    await progressUpdater.sendPubSubUpdate('transcoding', 25, "transcoding has started..");
+    await progressUpdater.publishQueueEvent('transcoding', 25, "transcoding has started..");
     
     // get video metadata of original video using ffProbe
     const videoMetadata = await getVideoMetadata(inputFilePath);
@@ -102,7 +103,7 @@ async function transcode(progressUpdater) {
     const ogHeight = videoMetadata.streams[0].height;
     const ogWidth = videoMetadata.streams[0].width;
   
-    await progressUpdater.sendPubSubUpdate('transcoding', 30, "Video metadata fetched..", {
+    await progressUpdater.publishQueueEvent('transcoding', 30, "Video metadata fetched..", {
       duration: duration,
       resolution: `${ogWidth}x${ogHeight}`,
       codec: videoMetadata.streams[0].codec_name
@@ -139,7 +140,7 @@ async function transcode(progressUpdater) {
     })
     ffmpegArgs.push('-progress', 'pipe:1', '-nostats');
   
-    await progressUpdater.sendPubSubUpdate('transcoding', 40, "Starting FFmpeg encoding...");
+    await progressUpdater.publishQueueEvent('transcoding', 40, "Starting FFmpeg encoding...");
   
     return new Promise((resolve, reject) => {
       const ffmpegProcess = execFile(ffmpegPath, ffmpegArgs);
@@ -162,7 +163,7 @@ async function transcode(progressUpdater) {
               
               // Send update every 5%
               if (progress % 5 === 0) {
-                await progressUpdater.sendPubSubUpdate('transcoding', progress, 
+                await progressUpdater.publishQueueEvent('transcoding', progress, 
                   `Encoding: ${Math.floor(currentTime)}s / ${Math.floor(duration)}s`
                 );
                 lastProgress = progress;
@@ -187,7 +188,7 @@ async function transcode(progressUpdater) {
       // handle finish task
       ffmpegProcess.on('close', async (code) => {
         if(code === 0) {
-          await progressUpdater.sendPubSubUpdate('transcoding', 70, "Creating master playlist...");
+          await progressUpdater.publishQueueEvent('transcoding', 70, "Creating master playlist...");
 
           const masterPlaylist = supportedRenditions.map(r =>
             `#EXT-X-STREAM-INF:BANDWIDTH=${r.bitrate.replace("k","000")},RESOLUTION=${r.size}\n${r.name}.m3u8`
@@ -199,7 +200,7 @@ async function transcode(progressUpdater) {
           const segmentFiles = outputFiles.filter(f => f.endsWith('.ts')).length;
           const playlistFiles = outputFiles.filter(f => f.endsWith('.m3u8')).length;
   
-          await progressUpdater.sendPubSubUpdate('transcoding', 75, "Transcoding completed successfully", {
+          await progressUpdater.publishQueueEvent('transcoding', 75, "Transcoding completed successfully", {
             totalFiles: outputFiles.length,
             segmentFiles: segmentFiles,
             playlistFiles: playlistFiles,
@@ -236,7 +237,7 @@ async function transcode(progressUpdater) {
 async function uploadHlsToR2(userId, videoId, progressUpdater) {
   let currentProgress = 80;
   try {
-    await progressUpdater.sendPubSubUpdate('uploading HLS', 80, "Uploading HLS started...");
+    await progressUpdater.publishQueueEvent('uploading HLS', 80, "Uploading HLS started...");
     const files = fs.readdirSync(outputDir);
     const totalFiles = files.length;
 
@@ -256,21 +257,38 @@ async function uploadHlsToR2(userId, videoId, progressUpdater) {
   
       await s3Client.send(command);
       currentProgress = Math.min(95, currentProgress + progressStep);
-      await progressUpdater.sendPubSubUpdate('uploading HLS', Math.round(currentProgress), `uploaded ${i+1} of ${totalFiles} files..`);
+      await progressUpdater.publishQueueEvent('uploading HLS', Math.round(currentProgress), `uploaded ${i+1} of ${totalFiles} files..`);
       console.log(`${file} is uploaded to public bucket`)
     }
     const masterKey = `videos/${userId}/${videoId}/hls/master.m3u8`;
     return {masterKey};
   } catch (error) {
-    await progressUpdater.sendPubSubUpdate('uploading HLS', Math.round(currentProgress), `Error occurred while uploading HLS files`);
+    await progressUpdater.publishQueueEvent('uploading HLS', Math.round(currentProgress), `Error occurred while uploading HLS files`);
     console.log("Error occcurred ")
     throw error;
   }
 } 
 
+async function deleteTempVideoFromS3(key) {
+  console.log("Deleting video from temp Bucket...")
+  
+  try {
+    const command = await DeleteObjectCommand({
+      Bucket: PRIVATE_BUCKET,
+      key: key,
+    })
+
+    await s3Client.send(command)
+  } catch (error) {
+    console.log("Error occured while deleting video from temp Bucket", error);
+  }
+
+  console.log("Video deleted from temp Bucket");
+}
+
 async function cleanupTempFiles(progressUpdater = null, sendUpdates = true) {
   console.log("Cleaning up temporary files...")
-  if(sendUpdates) await progressUpdater.sendPubSubUpdate('finalizing', 95, "finalizing transcoding...");
+  if(sendUpdates) await progressUpdater.publishQueueEvent('finalizing', 95, "finalizing transcoding...");
   
   try {
     if(fs.existsSync(outputDir)) {
@@ -301,7 +319,7 @@ export default async function(job) {
   const videoId = keyData[2];
   const fileName = keyData[4];
 
-  const progressUpdater = new ProgressUpdate(redis, job.id, videoId, userId, job);
+  const progressUpdater = new ProgressUpdate(redis,queueEventProducer, job.id, videoId, userId, job);
   try {
     // 1. download video from r2 and store locally 
     await downloadVideo(key, progressUpdater);
@@ -311,15 +329,18 @@ export default async function(job) {
   
     // 3. upload all the files to public R2 bucket
     const {masterKey} = await uploadHlsToR2(userId, videoId, progressUpdater);
+
+    // 4. delete temp file from private temp bucket
+    // await deleteTempVideoFromS3(key);
   
-    // 4. delete temp files from local storage (cleanup)
+    // 5. delete temp files from local storage (cleanup)
     await cleanupTempFiles(progressUpdater);
 
-    await progressUpdater.sendPubSubUpdate('completed', 100, "Transcoding completed successfully, your file is now ready...", {key: masterKey});
+    await progressUpdater.publishQueueEvent('completed', 100, "Transcoding completed successfully, your file is now ready...", {key: masterKey});
   } catch (error) {
     console.error(`Error occurred while transcoding for JOb ${job.id}`, error);
     await cleanupTempFiles(null, false);
-    await progressUpdater.sendPubSubUpdate('failed', 0, `Error occurred while transcoding video ${videoId}, JOB ${job.id}`, {key});
+    await progressUpdater.publishQueueEvent('failed', 0, `Error occurred while transcoding video ${videoId}, JOB ${job.id}`, {key});
     throw error;   
   }  
 }

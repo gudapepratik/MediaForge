@@ -9,6 +9,7 @@ import router from './routes/route.js'
 import './config/dotenv.js'
 import './config/passport.js'
 import './subscribers/transcode-updates.subscriber.js'
+import './subscribers/transcode-queue-event.subscriber.js'
 import { ApiError } from './utils/ApiError.js'
 
 const app = express();
