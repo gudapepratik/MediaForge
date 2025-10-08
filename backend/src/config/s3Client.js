@@ -130,3 +130,30 @@ export const listUploadParts  = async (key, uploadId) => {
         throw error;
     }
 }
+
+
+export const deleteHlsVideoFiles = async (userId, videoId) => {
+  try {
+    const keyPrefix = `videos/${userId}/${videoId}/hls/`;
+    const listObjectsCommand = new AWS.ListObjectsV2Command({
+      Bucket: 'public-videos-mediaforge',
+      Prefix: keyPrefix,
+    })
+
+    const {Contents} = await s3.send(listObjectsCommand);
+
+    const keys = Contents.map((value) => ({Key: value.Key}));
+
+    const deleteObjectsCommand = new AWS.DeleteObjectsCommand({
+      Bucket: BUCKET,
+      Delete: {
+        Objects: Contents
+      }
+    })
+
+    await s3.send(deleteObjectsCommand);
+  } catch (error) {
+    console.log("delete Video failed", error?.message)
+    throw error;
+  }
+}

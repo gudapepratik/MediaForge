@@ -1,5 +1,5 @@
 import { prisma } from "../config/db.js"
-import { abortMultiPartUpload, completeMultiPartUpload, createMultiPartUpload, createUploadObjectUrl, createUploadPartUrl} from "../config/s3Client.js"
+import { abortMultiPartUpload, completeMultiPartUpload,deleteHlsVideoFiles, createMultiPartUpload, createUploadObjectUrl, createUploadPartUrl} from "../config/s3Client.js"
 import { ApiError } from "../utils/ApiError.js"
 import { ApiResponse } from "../utils/ApiResponse.js"
 import {addToTranscodingQueue} from "../producers/videotranscode.producer.js"
@@ -586,6 +586,29 @@ export const getReadyVideos = async (req, res, next) => {
     return res.status(200).json(new ApiResponse(200, {videos}, "Videos fetched successfully"));
   } catch (error) {
     console.log("getReadyVideos Error", error)
+    return next(new ApiError(500, "Internal Server Error"))
+  }
+}
+
+// deletes a given video (after published) 
+// DELETE /delete-video/:videoId
+export const deleteVideo = async (req, res, next) => {
+  try {
+    const user = req.user;
+    const {videoId} = req.params;
+
+    if(!user)
+      throw new ApiError(404, "User not found");
+
+    if(!videoId)
+      throw new ApiError(404, "VideoId not found");
+
+    // delete from r2
+    await deleteHlsVideoFiles(user.id, videoId);
+
+    return res.status(200).json(new ApiResponse(200, null, "Video Deleted Successfully"));
+  } catch (error) {
+    console.error("deleteVideo error:", error);
     return next(new ApiError(500, "Internal Server Error"))
   }
 }

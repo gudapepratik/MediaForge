@@ -1,6 +1,8 @@
 import React, { useEffect, useRef, useState } from 'react'
 import Hls from 'hls.js/dist/hls.js'
 import 'media-chrome'
+import axios from 'axios';
+import config from '../../config';
 
 
 function VideoPlayer({videoUrl, title = null, thumbnail = null, mode = 'full'}) {
@@ -72,8 +74,22 @@ function VideoPlayer({videoUrl, title = null, thumbnail = null, mode = 'full'}) 
     return quality ? quality.label : 'Auto';
   };
 
+  const handleVideoDelete = async () => {
+    try {
+      const videoId = videoUrl.split('/')[5];
+      const {data} = await axios.delete(`${config.BACKEND_ENDPOINT}/api/videos/delete-video/${videoId}`, {
+        withCredentials: true,
+      })
+
+      console.log(data);
+    } catch (error) {
+      console.log("Error occurred", error)
+    }
+  }
+
   return (
     <div className="w-full mx-auto">
+      <button onClick={handleVideoDelete}>Delete the video</button>
       {/* Media Chrome Player */}
       <media-controller className="w-full bg-red-100">
         <video
