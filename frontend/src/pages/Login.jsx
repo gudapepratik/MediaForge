@@ -10,10 +10,6 @@ function Login() {
   const loginStatus = searchParams.get('login_status')
   const isNewUser = searchParams.get('is_new_user') === 'true'
 
-  const handleLoginRedirect = () => {
-    window.location.href = `${envConfig.BACKEND_ENDPOINT}/api/auth/google`;
-  };
-
   useEffect(() => {
     console.log(loginStatus, isNewUser)
     if(loginStatus === 'true' && !isNewUser) {
@@ -31,13 +27,26 @@ function Login() {
     }
   }, [searchParams, navigate]);
 
+  const googleAuthSubmit = () => {
+    window.location.href = `${envConfig.BACKEND_ENDPOINT}/api/auth/google`;
+  }
+
+  const emailAuthSubmit = (e) => {
+    e.preventDefault();
+    console.log(e);
+    const email = e.target[0].value;
+    const password = e.target[1].value;
+    console.log(email, password);
+    alert('Yet to be implemented');
+  }
+
   // <div>
   //   <button onClick={handleLoginRedirect}>Login with google</button>
   // </div>
   return (
     <>
-      <div className="w-full h-screen flex items-center justify-center">
-        <LoginForm/>
+      <div className="w-full h-screen bg-zinc-950 flex items-center justify-center">
+        <LoginForm emailAuthSubmitHandler={emailAuthSubmit} googleAuthSubmitHandler={googleAuthSubmit}/>
       </div>
     </>
   );

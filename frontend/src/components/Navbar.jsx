@@ -2,11 +2,21 @@ import React from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { logoutUser } from "../store/authSlice";
 import { NavLink } from "react-router";
+import { Button } from "@/components/ui/button";
+import { useTheme } from "./ThemeProvider";
 
 function Navbar() {
   const { isAuthenticated, isLoading, user } = useSelector(
     (state) => state.auth
   );
+  const {theme, setTheme} = useTheme();
+
+  const handleThemeToggle = () => {
+    if(theme === 'light')
+      setTheme('dark')
+    else
+      setTheme('light')
+  }
 
   const dispatch = useDispatch();
 
@@ -37,6 +47,8 @@ function Navbar() {
             Login
           </NavLink>
         )}
+
+        <Button onClick={handleThemeToggle}>Theme mode</Button>
       </div>
     </>
   );

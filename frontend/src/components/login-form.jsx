@@ -12,19 +12,21 @@ import { Label } from "@/components/ui/label"
 
 export function LoginForm({
   className,
+  googleAuthSubmitHandler,
+  emailAuthSubmitHandler,
   ...props
 }) {
   return (
     <div className={cn("flex flex-col gap-6 font-satoshi", className)} {...props}>
       <Card>
-        <CardHeader>
+        <CardHeader className="flex text-center">
           <CardTitle className="text-2xl">Login</CardTitle>
           <CardDescription>
             Enter your email below to login to your account
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <form>
+          <form onSubmit={emailAuthSubmitHandler}>
             <div className="flex flex-col gap-6">
               <div className="grid gap-2">
                 <Label htmlFor="email">Email</Label>
@@ -41,10 +43,10 @@ export function LoginForm({
                 </div>
                 <Input id="password" type="password" required />
               </div>
-              <Button type="submit" className="w-full">
+              <Button type="submit" className="w-full dark:text-red-200 ">
                 Login
               </Button>
-              <Button variant="outline" className="w-full">
+              <Button type="button" onClick={googleAuthSubmitHandler} variant="outline" className="w-full">
                 Login with Google
               </Button>
             </div>

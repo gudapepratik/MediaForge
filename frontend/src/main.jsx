@@ -15,7 +15,7 @@ import Uploads from './pages/Uploads.jsx'
 import Videos from './pages/Videos.jsx'
 import {UploadProvider} from './contexts/UploadContext.jsx'
 import { SocketProvider } from "./contexts/SocketContext.jsx";
-import { LoginForm } from "./components/login-form";
+import { ThemeProvider } from "./components/ThemeProvider.jsx";
 
 const router = createBrowserRouter(
   createRoutesFromElements(
@@ -52,7 +52,9 @@ createRoot(document.getElementById("root")).render(
       <SocketProvider>
         <CheckAuth>
           <UploadProvider>
-            <RouterProvider router={router}/>
+            <ThemeProvider defaultTheme="system" storageKey="vite-ui-theme">
+              <RouterProvider router={router}/>
+            </ThemeProvider>
           </UploadProvider>
         </CheckAuth>
       </SocketProvider>
