@@ -1,5 +1,8 @@
 import { QueueEvents } from "bullmq";
 import connection from "../config/redis.js";
+import { io } from '../index.js'
+import { prisma } from "../config/db.js";
+
 
 const subscriber = new QueueEvents('transcode-events-queue', {
   connection: connection,
@@ -57,7 +60,7 @@ subscriber.on('video-transcode-update', async (msg) => {
   console.log(data);
   io.to(`user:${data.userId}`).emit('transcode-update', data);
   
-  console.log(`message recieved from channel ${ch}`);
+  console.log(`message recieved from channel`);
 })
 
 subscriber.on('error', (err) => {

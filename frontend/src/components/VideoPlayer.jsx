@@ -3,7 +3,18 @@ import Hls from 'hls.js/dist/hls.js'
 import 'media-chrome'
 import axios from 'axios';
 import config from '../../config';
-
+import { Button } from "@/components/ui/button"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog"
 
 function VideoPlayer({videoUrl, title = null, thumbnail = null, mode = 'full'}) {
   const videoRef = useRef(null);
@@ -89,7 +100,7 @@ function VideoPlayer({videoUrl, title = null, thumbnail = null, mode = 'full'}) 
 
   return (
     <div className="w-full mx-auto">
-      <button onClick={handleVideoDelete}>Delete the video</button>
+      <Button onClick={handleVideoDelete}>Delete the video</Button>
       {/* Media Chrome Player */}
       <media-controller className="w-full bg-red-100">
         <video
