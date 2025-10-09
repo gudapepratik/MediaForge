@@ -1,6 +1,7 @@
 import React, { useEffect } from "react";
 import {useNavigate, useSearchParams } from "react-router";
 import envConfig from '../../config';
+import { LoginForm } from "../components/login-form";
 
 function Login() {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -30,10 +31,15 @@ function Login() {
     }
   }, [searchParams, navigate]);
 
+  // <div>
+  //   <button onClick={handleLoginRedirect}>Login with google</button>
+  // </div>
   return (
-    <div>
-      <button onClick={handleLoginRedirect}>Login with google</button>
-    </div>
+    <>
+      <div className="w-full h-screen flex items-center justify-center">
+        <LoginForm/>
+      </div>
+    </>
   );
 }
 

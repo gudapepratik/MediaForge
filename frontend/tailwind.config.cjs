@@ -54,7 +54,13 @@ module.exports = {
   				'5': 'hsl(var(--chart-5))'
   			}
   		}
-  	}
+  	},
+    fontFamily: {
+      zalandoSans: ['"Zalando Sans Expanded"', "sans-serif"],
+      geologica: ['"Geologica"', "sans-serif"],
+      satoshi: ['Satoshi', 'sans-serif']
+      // Add more custom font families as needed
+    },
   },
   plugins: [require("tailwindcss-animate")],
 }
