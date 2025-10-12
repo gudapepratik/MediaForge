@@ -10,18 +10,17 @@ function Layout() {
 
   return (
     <SidebarProvider>
-      <div className="w-full flex min-h-screen bg-background text-foreground">
+      <div className="w-screen flex h-screen bg-background text-foreground">
         {!isLoginPage && <AppSidebar />}
 
-        <div className="flex-1 flex flex-col">
-          {/* Navbar (with SidebarTrigger inside it) */}
+        <div className="w-full flex-1 flex flex-col">
           {!isLoginPage && (
-            <header className="w-full sticky top-0 z-50">
+            <header className="w-full">
               <Navbar />
             </header>
           )}
 
-          <main className="flex-1">
+          <main className="flex-1 pt-16 md:pt-20">
             <Outlet />
           </main>
         </div>
