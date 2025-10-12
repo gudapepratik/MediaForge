@@ -1,7 +1,7 @@
 import React from 'react'
 import { NavLink, useLocation } from 'react-router'
 
-function Sidebar() {
+function Sidebarss() {
     const location = useLocation();
     const menus = [
         {
@@ -31,4 +31,4 @@ function Sidebar() {
   )
 }
 
-export default Sidebar
+export default Sidebarss
