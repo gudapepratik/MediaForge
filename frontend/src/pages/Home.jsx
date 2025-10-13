@@ -2,6 +2,7 @@ import React from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import {NavLink } from 'react-router'
 import HomeVideoSkeleton from '../components/skeletons/HomeVideoSkeleton'
+import HomeVideoCard from '../components/HomeVideoCard'
 
 function Home() {
   const {isAuthenticated, isLoading, user} = useSelector(state => state.auth)
@@ -16,7 +17,8 @@ function Home() {
         </div>
       }
       <div className="w-full grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 justify-items-center  p-2 md:p-4">
-        <HomeVideoSkeleton />
+        {/* <HomeVideoSkeleton /> */}
+        <HomeVideoCard/>
         <HomeVideoSkeleton />
         <HomeVideoSkeleton />
         <HomeVideoSkeleton />
