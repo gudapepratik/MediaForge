@@ -24,50 +24,38 @@ function HomeVideoCard({thumbnail, videoUrl, avatar, title = "This is video titl
     });
   }
 
-  useState(() => {
-    console.log(isOnVideo ? "showing video" : "removing video")
-  }, [isOnVideo])
-
-  let hoverTimeout;
   const handleMouseEnter = () => {
-    hoverTimeout.current = setTimeout(() => setIsOnVideo(true), 1000); // 2 secs delay
+    hoverTimeoutRef.current = setTimeout(() => setIsOnVideo(true), 600); // 600 ms delay
   }
 
   const handleMouseLeave = () => {
     setIsOnVideo(false);
-    clearTimeout(hoverTimeout.current);
+    clearTimeout(hoverTimeoutRef.current);
+  }
+
+  const handleNavigateToVideo = () => {
+
   }
 
   return (
-    <div onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave} className="w-full max-w-sm -md:maxw-md lg:max-w-lg flex flex-col space-y-3 font-satoshi">
+    <div onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave} onClick={handleNavigateToVideo} className="w-full max-w-sm -md:maxw-md lg:max-w-lg flex hover:cursor-pointer flex-col space-y-3 font-satoshi">
       {/* TOP - Thumbnail  */}
-      <div className="w-full aspect-video rounded-xl overflow-hidden">
-        {/* {!isOnVideo ? (
-          (thumbnail ? (
-            <img src={thumbnail} alt="video thumbnail" />
-          ): (
-            <Skeleton className={"w-full aspect-video"}/>
-          ))
-        ): (
-          <HomeVideoPlayer isOnVideo={isOnVideo} />
-        )} */}
-
-        {/* {isOnVideo && (
-          (isLoaded ? (
-            <HomeVideoPlayer isOnVideo={isOnVideo} setIsLoaded={setIsLoaded}/>
-            ): (
-              <Skeleton className={"w-full aspect-video"}/>
-              ))
-              )} */}
-        <HomeVideoPlayer isOnVideo={isOnVideo} setIsLoaded={setIsLoaded} thumbnail={thumbnail} videoUrl={videoUrl}/>
-
-
+      <div className="relative w-full aspect-video rounded-xl overflow-hidden bg-zinc-900">
+        <HomeVideoPlayer
+          isOnVideo={isOnVideo}
+          setIsLoaded={setIsLoaded}
+          thumbnail={thumbnail}
+          videoUrl={videoUrl}
+        />
         {!isOnVideo && (
-          <img src={thumbnail || 'https://marketplace.canva.com/EAFSv6o6beQ/2/0/1600w/canva-red-bold-finance-youtube-thumbnail-vGSnQGShz3c.jpg'} alt="video thumbnail"/>
+          <img
+            src={thumbnail || 'https://marketplace.canva.com/EAFSv6o6beQ/2/0/1600w/canva-red-bold-finance-youtube-thumbnail-vGSnQGShz3c.jpg'}
+            alt="video thumbnail"
+            className="absolute inset-0 w-full h-full object-cover"
+          />
         )}
-
         {!isLoaded && isOnVideo && (
-          <Skeleton className="absolute inset-0 w-full h-full aspect-video" />
+          <Skeleton className="absolute inset-0 w-full h-full" />
         )}
       </div>
 
