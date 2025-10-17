@@ -38,7 +38,7 @@ function HomeVideoCard({thumbnail, videoUrl, avatar, title = "This is video titl
   }
 
   return (
-    <div onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave} onClick={handleNavigateToVideo} className="w-full max-w-sm -md:maxw-md lg:max-w-lg flex hover:cursor-pointer flex-col space-y-3 font-satoshi">
+    <div onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave} onClick={handleNavigateToVideo} className="w-full max-w-sm -md:max-w-md lg:max-w-lg flex hover:cursor-pointer flex-col space-y-3 font-satoshi">
       {/* TOP - Thumbnail  */}
       <div className="relative w-full aspect-video rounded-xl overflow-hidden bg-zinc-900">
         <HomeVideoPlayer
@@ -65,7 +65,7 @@ function HomeVideoCard({thumbnail, videoUrl, avatar, title = "This is video titl
         <img src={avatar || DummyMaleAvatarImage} className="w-10 h-10 rounded-full overflow-hidden flex-shrink-0"/>
         {/* TITLE AND VIEWS  */}
         <div className="flex-1 ">
-          <h2 className="text-sm md:text-lg font-bold">{title}</h2>
+          <h2 className="text-sm md:text-lg font-bold text-zinc-800 dark:text-foreground  ">{title}</h2>
           <div className="text-xs text-zinc-400 flex items-center gap-1 ">
             <p>{transformViews(views)}</p>
             <p>{transformDate(uploadedAt)}</p>

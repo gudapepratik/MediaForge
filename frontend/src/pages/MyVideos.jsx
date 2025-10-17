@@ -5,6 +5,8 @@ import { useEffect } from 'react';
 import axios from 'axios';
 import config from '../../config';
 import VideoPlayer from '../components/VideoPlayer';
+import { Badge } from '../components/ui/badge';
+import { Spinner } from '../components/ui/spinner';
 
 function Videos() {
   const [videos, setVideos] = useState([]);
@@ -42,12 +44,14 @@ function Videos() {
 
   return (
     <>
-      <div className='w-[calc(80%)] bg-zinc-500'>
+      <div className='w-full h-screen p-4 md:p-6 bg-background text-white'>
         {/* TOP SECTION*/}
-        <VideoUpload/>
+        {/* <VideoUpload/> */}
 
         {isLoading ? (
-          <div>Loading videos....</div>
+          <Badge>
+            <Spinner/> Loading
+          </Badge>
         ): (
           <div className='w-full grid grid-cols-3 p-4 gap-4 '>
             {videos && (

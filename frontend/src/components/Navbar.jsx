@@ -11,6 +11,7 @@ import { Item } from "./ui/item";
 import { BellRing, Icon, LogIn, Menu, Upload } from "lucide-react";
 import SearchBar from "./SearchBar";
 import { SidebarTrigger } from "./ui/sidebar";
+import UploadVideoDialog from "./UploadVideoDialog";
 
 function Navbar() {
   const { isAuthenticated, isLoading, user } = useSelector(
@@ -53,19 +54,14 @@ function Navbar() {
           </Item>
 
           {/* Search Bar */}
-          <Item className="hidden md:flex w-1/2">
+          <Item className="hidden md:flex w-1/3">
             <SearchBar />
           </Item>
 
           {/* Right Section */}
           <Item className="items-center justify-end gap-3">
-            {isAuthenticated ? (
-              <Button
-                onClick={handleVideoUpload}
-                className="hidden md:flex bg-accent text-accent hover:text-white dark:text-white dark:hover:text-accent"
-              >
-                <Upload /> Upload Video
-              </Button>
+            {!isAuthenticated ? (
+              <UploadVideoDialog/>
             ) : (
               <Button
                 onClick={() => navigate("/login")}
