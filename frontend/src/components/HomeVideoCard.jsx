@@ -2,11 +2,13 @@ import React, { useRef, useState } from 'react'
 import { DummyMaleAvatarImage } from '../assets/images/imageAssets'
 import { Skeleton } from './ui/skeleton';
 import HomeVideoPlayer from './HomeVideoPlayer';
+import { useNavigate } from 'react-router';
 
-function HomeVideoCard({thumbnail, videoUrl, avatar, title = "This is video title", views = 0, uploadedAt = new Date()}) {
+function HomeVideoCard({videoId, thumbnail, videoUrl, avatar, title = "This is video title", views = 0, uploadedAt = new Date()}) {
   const [isOnVideo, setIsOnVideo] = useState(false);
   const [isLoaded, setIsLoaded] = useState(false);
   const hoverTimeoutRef = useRef(null);
+  const navigate = useNavigate();
 
   const transformViews = (views) => {
     if (views < 1000) return `${views} views`;
@@ -34,7 +36,7 @@ function HomeVideoCard({thumbnail, videoUrl, avatar, title = "This is video titl
   }
 
   const handleNavigateToVideo = () => {
-
+    navigate(`/watch?v=${videoId}`)
   }
 
   return (

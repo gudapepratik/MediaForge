@@ -16,12 +16,14 @@ import Videos from './pages/MyVideos.jsx'
 import {UploadProvider} from './contexts/UploadContext.jsx'
 import { SocketProvider } from "./contexts/SocketContext.jsx";
 import { ThemeProvider } from "./components/ThemeProvider.jsx";
+import WatchVideo from "./pages/WatchVideo.jsx";
 
 const router = createBrowserRouter(
   createRoutesFromElements(
     <Route path="/" element={<Layout/>}>
       <Route index element={<Home/>}/>
       <Route path="/login" element={<Login/>}/>
+      <Route path="/watch" element={<WatchVideo/>}/>
       {/* <Route path="/login" element={<LoginForm/>}/> */}
       <Route path="/uploads" element={<Uploads/>}/>
       <Route path="/videos" element={<Videos/>}/>

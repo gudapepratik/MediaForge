@@ -6,38 +6,18 @@ import { useUpload } from '../Hooks/useUpload';
 import { useEffect } from 'react';
 import { io } from 'socket.io-client';
 import envConfig from '../../config';
-// import { useUploadManager } from '../Hooks/useUploadManager';
+import { useSearchParams } from 'react-router';
 
 function Uploads() {
-  // const { uploads, setUploads } = useUpload();
-
   const [view, setView] = useState('uploads'); // uploads or transcodes
   const [isLoading, setIsLoading] = useState(false);
+  const [searchParams, setSearchParams] = useSearchParams();
 
-  // useEffect(() => {
-  //   const socket = io(envConfig.SOCKETIO_ENDPOINT, {
-  //     reconnectionAttempts: 4,
-  //     withCredentials: true,
-  //   })
-
-  //   socket.emit('registerUser', (res) => {
-  //     if(res?.ok)
-  //       console.log(`socketio Client joined user room`);
-  //   })
-
-  //   socket.on('transcode-started', (videoId, jobId) => {
-  //     setUploads((uploads) =>
-  //       uploads.map((u) =>
-  //         u.videoId === videoId ? { ...u, status: 'transcoding', jobId } : u
-  //       )
-  //     );
-  //   });
-
-  //   return () => {
-  //     socket.emit('leaveUserRoom');
-  //     socket.close();
-  //   }
-  // }, []);
+  useEffect(() => {
+    if(searchParams.get('view') === "transcodes") {
+      setView("transcodes");
+    }
+  }, [searchParams])
 
   return (
     <>

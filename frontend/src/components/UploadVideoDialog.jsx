@@ -56,7 +56,6 @@ function UploadVideoDialog() {
 
         <div className="flex-1 overflow-y-auto mt-4 pr-1 space-y-5">
           <form onSubmit={handleSubmit} className="space-y-5">
-            {/* Thumbnail Upload */}
             <div className="space-y-2">
               <Label htmlFor="thumbnail">Thumbnail</Label>
               <Input
@@ -75,30 +74,27 @@ function UploadVideoDialog() {
               )}
             </div>
 
-            {/* Video Upload */}
             <div className="space-y-2">
               <Label htmlFor="video">Video File</Label>
               <Input id="video" name="video" type="file" accept="video/*" required />
             </div>
 
-            {/* Title */}
             <div className="space-y-2">
               <Label htmlFor="title">Title</Label>
-              <Input id="title" name="title" placeholder="Enter video title" required />
+              <Input id="title" name="title" placeholder="Enter video title" required minLength={20}/>
             </div>
 
-            {/* Description */}
             <div className="space-y-2">
               <Label htmlFor="description">Description</Label>
               <Textarea
                 id="description"
                 name="description"
                 placeholder="Write a short description..."
-                className="resize-none"
+                className="resize-y"
+                minLength={20}
               />
             </div>
 
-            {/* Public / Private */}
             <div className="flex items-center justify-between rounded-md border px-3 py-2">
               <Label htmlFor="public" className="text-sm">
                 Make Public
@@ -109,8 +105,6 @@ function UploadVideoDialog() {
                 onCheckedChange={setIsPublic}
               />
             </div>
-
-            {/* Buttons inside scrollable area (optional) */}
             <DialogFooter className="pt-2">
               <DialogClose asChild>
                 <Button type="button" variant="outline">Cancel</Button>
