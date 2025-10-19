@@ -219,30 +219,70 @@ function WatchVideoPlayer({ thumbnail, videoUrl }) {
               <DropdownMenuContent align="end" className="bg-zinc-900 text-white border-none w-40">
                 {settingsView === "main" && (
                   <>
-                    <DropdownMenuItem onClick={() => setSettingsView("playback")}>Playback Speed</DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => setSettingsView("quality")}>Quality</DropdownMenuItem>
+                    <DropdownMenuItem 
+                      onSelect={(e) => {
+                        e.preventDefault();
+                        setSettingsView("playback");
+                      }}
+                    >
+                      Playback Speed
+                    </DropdownMenuItem>
+                    <DropdownMenuItem 
+                      onSelect={(e) => {
+                        e.preventDefault();
+                        setSettingsView("quality");
+                      }}
+                    >
+                      Quality
+                    </DropdownMenuItem>
                   </>
                 )}
 
                 {settingsView === "playback" && (
                   <>
                     {playbackRates.map((rate) => (
-                      <DropdownMenuItem key={rate} onClick={() => changePlaybackRate(rate)}>
+                      <DropdownMenuItem 
+                        key={rate} 
+                        onSelect={(e) => {
+                          e.preventDefault();
+                          changePlaybackRate(rate);
+                        }}
+                      >
                         {rate}x {currentRate === rate && "✓"}
                       </DropdownMenuItem>
                     ))}
-                    <DropdownMenuItem onClick={() => setSettingsView("main")}>← Back</DropdownMenuItem>
+                    <DropdownMenuItem 
+                      onSelect={(e) => {
+                        e.preventDefault();
+                        setSettingsView("main");
+                      }}
+                    >
+                      ← Back
+                    </DropdownMenuItem>
                   </>
                 )}
 
                 {settingsView === "quality" && (
                   <>
                     {qualities.map((q) => (
-                      <DropdownMenuItem key={q.id} onClick={() => changeQuality(q.id)}>
+                      <DropdownMenuItem 
+                        key={q.id} 
+                        onSelect={(e) => {
+                          e.preventDefault();
+                          changeQuality(q.id);
+                        }}
+                      >
                         {q.label} {currentQuality === q.id && "✓"}
                       </DropdownMenuItem>
                     ))}
-                    <DropdownMenuItem onClick={() => setSettingsView("main")}>← Back</DropdownMenuItem>
+                    <DropdownMenuItem 
+                      onSelect={(e) => {
+                        e.preventDefault();
+                        setSettingsView("main");
+                      }}
+                    >
+                      ← Back
+                    </DropdownMenuItem>
                   </>
                 )}
               </DropdownMenuContent>
