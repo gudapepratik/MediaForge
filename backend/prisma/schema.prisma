@@ -20,6 +20,7 @@ model User {
   id        String   @id @default(cuid())
   name      String
   email     String   @unique
+  avatar    String?
   googleId  String?  @unique
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -48,6 +49,10 @@ model video {
   id          String      @id @default(cuid())
   userId      String
   fileName    String
+  title       String?
+  thumbnail   String?
+  description String?
+  isPublic    Boolean?
   contentType String
   fileSize    Int
   hash        String      @unique

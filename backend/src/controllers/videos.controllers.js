@@ -694,3 +694,14 @@ export const markVideoUploadFailed = async (req,res,next) => {
         return next(new ApiError(500, "Internal Server Error"))
     }
 }
+
+// stale
+export const trialVideoUpload = async (req, res, next) => {
+  const user = req.user;
+
+  const avatar = req.file
+
+  console.log(avatar);
+
+  return res.status(200).json(new ApiResponse(200, null, "video uploading has started"));
+}
