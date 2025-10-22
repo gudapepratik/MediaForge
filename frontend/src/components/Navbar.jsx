@@ -60,7 +60,7 @@ function Navbar() {
 
           {/* Right Section */}
           <Item className="items-center justify-end gap-3">
-            {!isAuthenticated ? (
+            {isAuthenticated ? (
               <UploadVideoDialog/>
             ) : (
               <Button

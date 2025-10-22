@@ -61,8 +61,8 @@ export function useUploadManager() {
   // helper
   async function updateUploadStatusServer(videoId, status) {
     try {
-      await axios.patch(`${evnConfig.BACKEND_ENDPOINT}/api/videos/upload-status/${videoId}`,{status}, {withCredentials: true} );
-    } catch (err) {console.log("Upload Status update Failed: Failed to update Server")}
+      await axios.put(`${evnConfig.BACKEND_ENDPOINT}/api/videos/upload-status/${videoId}`,{status}, {withCredentials: true} );
+    } catch (err) {console.log("Upload Status update Failed: Failed to update Server", err)}
   }
 
   async function initQueue(uploadMeta, file) {
@@ -204,21 +204,37 @@ export function useUploadManager() {
   }
 
   // starting upload from a new file selection: create upload first
-  async function createAndStartUpload(file) {
-    const checksum = await (async () => { try { return await getFileHash(file) } catch(e){ return null } })();
-    const { data } = await axios.post(`${evnConfig.BACKEND_ENDPOINT}/api/videos/create-multipart-upload-request`, { fileName: file.name, fileSize: file.size, contentType: file.type, checksum }, { withCredentials: true });
+  async function createAndStartUpload(uploadPayload) {
+    const checksum = await (async () => { try { return await getFileHash(uploadPayload.video) } catch(e){ return null } })();
+    const videoFile = uploadPayload.video;
+    const formData = new FormData();
+    formData.append("title", uploadPayload.title)
+    formData.append("description", uploadPayload.description)
+    formData.append("isPublic", uploadPayload.isPublic)
+    formData.append("thumbnail", uploadPayload.thumbnail)
+    formData.append("fileName", videoFile.name)
+    formData.append("fileSize", videoFile.size)
+    formData.append("contentType", videoFile.type)
+    formData.append("checksum", checksum)
+
+    const { data } = await axios.post(`${evnConfig.BACKEND_ENDPOINT}/api/videos/create-multipart-upload-request`, formData, { withCredentials: true, headers: {"Content-Type": "multipart/form-data"}});
     const payload = data.data;
+    console.log(payload);
 
     let newMeta;
     if(payload.isExist) {
-      await startUploadWithFile(payload.videoId, file);
+      await startUploadWithFile(payload.videoId, videoFile);
       return;
     } else{
       newMeta = {
         videoId: payload.videoId,
         uploadId: payload.uploadId,
         checkSum: checksum,
-        fileName: file.name,
+        fileName: videoFile.name,
+        title: uploadPayload.title,
+        description: uploadPayload.description,
+        isPublic: uploadPayload.isPublic,
+        thumbnail: payload.thumbnail,
         chunkSize: payload.chunkSize,
         totalParts: payload.totalParts,
         percentage: 0,
@@ -230,7 +246,7 @@ export function useUploadManager() {
     setUploads(prev => [newMeta, ...prev]);
 
     // navigate to uploads page or let UI handle it
-    await startUploadWithFile(payload.videoId, file, newMeta);
+    await startUploadWithFile(payload.videoId, videoFile, newMeta);
   }
 
   return {

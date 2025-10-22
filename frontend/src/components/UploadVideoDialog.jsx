@@ -15,10 +15,14 @@ import { Input } from './ui/input'
 import { Textarea } from './ui/textarea'
 import { Label } from './ui/label'
 import { Switch } from './ui/switch'
+import axios from 'axios'
+import config from '../../config'
+import { useUpload } from '../Hooks/useUpload'
 
 function UploadVideoDialog() {
   const [thumbnailPreview, setThumbnailPreview] = useState(null)
   const [isPublic, setIsPublic] = useState(true)
+  const {createAndStartUpload} = useUpload();
 
   const handleThumbnailChange = (e) => {
     const file = e.target.files?.[0]
@@ -27,12 +31,34 @@ function UploadVideoDialog() {
     }
   }
 
-  const handleSubmit = (e) => {
-    e.preventDefault()
-    const formData = new FormData(e.target)
-    formData.append("isPublic", isPublic)
-    // TODO: Handle upload logic here (R2 or Cloudinary)
-    console.log("Form submitted:", Object.fromEntries(formData))
+  const handleSubmit = async (e) => {
+    try {
+      e.preventDefault()
+      // const formData = new FormData()
+      // formData.append("title", e.target.title.value)
+      // formData.append("description", e.target.description.value)
+      // formData.append("thumbnail", e.target.thumbnail.files[0]);
+      // formData.append("isPublic", isPublic)
+      const payload = {
+        title: e.target.title.value,
+        description: e.target.description.value,
+        thumbnail: e.target.thumbnail.files[0],
+        isPublic: isPublic,
+        video: e.target.video.files[0]
+      }
+  
+      await createAndStartUpload(payload)
+      // TODO: Handle upload logic here (R2 or Cloudinary)
+      // console.log("Form submitted:", Object.fromEntries(formData))
+      // const {data} = await axios.post(`${config.BACKEND_ENDPOINT}/api/videos/upload-video-image`, formData, {
+      //   withCredentials: true,
+      //   headers: {
+      //     "Content-Type": 'multipart/form-data'
+      //   }
+      // })
+    } catch (error) {
+      console.log("Error occurred while uploading video", error)
+    }
   }
 
   return (

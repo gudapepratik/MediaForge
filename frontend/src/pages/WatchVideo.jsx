@@ -15,18 +15,18 @@ function WatchVideo() {
 
   useEffect(() => {
     const v = searchParams.get("v")
-    // if (!v || v === "undefined") {
-    //   setTimeout(() => navigate("/"), 3000)
-    // } else {
-    //   fetchVideo(v)
-    // }
+    if (!v) {
+      setTimeout(() => navigate("/"), 3000)
+    } else {
+      fetchVideo(v)
+    }
   }, [searchParams, navigate])
 
   const fetchVideo = async (videoId) => {
     try {
       setLoading(true);
-      const { data } = await axios.get(`${config.BACKEND_ENDPOINT}/video/${videoId}`)
-      setVideo(data?.video)
+      const { data } = await axios.get(`${config.BACKEND_ENDPOINT}/api/videos/get-video/${videoId}`)
+      setVideo(data?.data?.video)
     } catch (error) {
       console.error("Error Loading video", error)
     } finally {
@@ -40,19 +40,16 @@ function WatchVideo() {
       <div className="aspect-video w-full rounded-xl overflow-hidden bg-zinc-900">
         <WatchVideoPlayer
           thumbnail={video?.thumbnail}
-          videoUrl={
-            video?.videoUrl ||
-            "https://pub-b462f8f0e6784b8fbdbfca6e0cd1d5cb.r2.dev/videos/cmfgvpl9i0000o30zgxo1wois/cmghvbnol0001mmcykop7w2tk/hls/master.m3u8"
-          }
+          videoUrl={`${config.R2_PUBLIC_URL}/${video?.storageKey}`}
         />
       </div>
 
-      <div className="mt-4 space-y-3">
+      <div className="mt-4 space-y-3 text-foreground">
         {/* Title */}
         {loading ? (
           <Skeleton className="h-6 w-3/4" />
         ) : (
-          <h1 className="text-lg md:text-xl font-semibold text-zinc-100">{video?.title || "Sample Video Title"}</h1>
+          <h1 className="text-lg md:text-xl font-semibold text-foreground">{video?.title || "Sample Video Title"}</h1>
         )}
 
         {/* User Info */}
@@ -65,11 +62,11 @@ function WatchVideo() {
           ) : (
             <>
               <Avatar className="w-10 h-10">
-                <AvatarImage src={video?.uploader?.avatar || "/default-avatar.png"} alt={video?.uploader?.name} />
-                <AvatarFallback>{video?.uploader?.name?.[0]?.toUpperCase() || "U"}</AvatarFallback>
+                <AvatarImage src={video?.user?.avatar || "/default-avatar.png"} alt={video?.user?.name} />
+                <AvatarFallback>{video?.user?.name?.[0]?.toUpperCase() || "U"}</AvatarFallback>
               </Avatar>
               <div className="flex flex-col">
-                <span className="text-sm font-medium text-zinc-100">{video?.uploader?.name || "John Doe"}</span>
+                <span className="text-sm font-medium text-zinc-100 ">{video?.user?.name || "John Doe"}</span>
                 <span className="text-xs text-zinc-400">12.3K subscribers</span>
               </div>
             </>

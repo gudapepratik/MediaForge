@@ -1,8 +1,9 @@
 import { prisma } from "../config/db.js"
-import { abortMultiPartUpload, completeMultiPartUpload,deleteHlsVideoFiles, createMultiPartUpload, createUploadObjectUrl, createUploadPartUrl} from "../config/s3Client.js"
+import { abortMultiPartUpload, completeMultiPartUpload,deleteHlsVideoFiles, createMultiPartUpload, createUploadObjectUrl, createUploadPartUrl, uploadImage} from "../config/s3Client.js"
 import { ApiError } from "../utils/ApiError.js"
 import { ApiResponse } from "../utils/ApiResponse.js"
 import {addToTranscodingQueue} from "../producers/videotranscode.producer.js"
+import fs from 'fs'
 
 const CHUNK_SIZE = 10 * 1024 * 1024; // 10 mb chunksize
 
@@ -67,6 +68,10 @@ export const getUploads = async (req, res, next) => {
                   uploadId: video.upload.id,
                   fileName: video.fileName,
                   checkSum: video.hash,
+                  title: video.title,
+                  description: video.description,
+                  isPublic: video.isPublic,
+                  thumbnail: video.thumbnail,
                   chunkSize: CHUNK_SIZE,
                   totalParts,
                   percentage: completedPercentage,
@@ -139,6 +144,10 @@ export const getUploadById = async (req, res, next) => {
         const data =  {
           videoId: video.id,
           fileName: video.fileName,
+          title: video.title,
+          description: video.description,
+          isPublic: video.isPublic,
+          thumbnail: video.thumbnail,
           fileSize: Number(video.fileSize),
           contentType: video.contentType,
           status: video.status,
@@ -191,11 +200,12 @@ export const getUploadStatus = async (req,res,next) => {
 }
 
 // update upload status
-// PATCH /upload-status/:videoId
+// PUT /upload-status/:videoId
 export const updateUploadStatus = async (req,res,next) => {
     try {
         const {videoId} = req.params
         const {status} = req.body
+        console.log(videoId)
 
         if(!videoId && !status) return next(new ApiError(400, "missing data or Invalid request"))
 
@@ -220,13 +230,14 @@ export const updateUploadStatus = async (req,res,next) => {
 // POST /create-multipart-upload-request
 export const requestMultiPartUpload = async (req, res, next) => {
     try {
-        const {fileName, fileSize, contentType, checksum} = req.body
+        const {fileName,title, description,isPublic, fileSize, contentType, checksum} = req.body
         const user = req.user
-        
+        const thumbnail = req.file
+        console.log(fileName, thumbnail)
         if(!user)
             return next(new ApiError(401, "user not authenticated"))
 
-        if(!fileName || !fileSize || !contentType || !checksum)
+        if(!fileName || !fileSize || !contentType || !checksum || !title || !description || !thumbnail)
             return next(new ApiError(400, "Invalid or missing data"))
         
         // check if file already exists
@@ -244,7 +255,6 @@ export const requestMultiPartUpload = async (req, res, next) => {
             message: "File already uploaded or in progress."
           }));
         }
-
         
         // calculate chunks (no. of parts)
         const chunks = Math.ceil(Number(fileSize) / CHUNK_SIZE);
@@ -255,6 +265,9 @@ export const requestMultiPartUpload = async (req, res, next) => {
             const video = await tx.video.create({
                 data: {
                     fileName,
+                    title,
+                    description,
+                    isPublic: isPublic === "true" ? true : false,
                     fileSize: Number(fileSize),
                     contentType,
                     userId: user.id,
@@ -263,11 +276,11 @@ export const requestMultiPartUpload = async (req, res, next) => {
             })
 
             const {UploadId, key} = await createMultiPartUpload(user.id, fileName, video.id, contentType)
-
+            
             await tx.video.update({
                 where: {id: video.id},
                 data: {
-                    storageKey: key
+                    storageKey: key,
                 }
             })
 
@@ -294,8 +307,21 @@ export const requestMultiPartUpload = async (req, res, next) => {
             return {uploadId: upload.id, videoId: video.id, key}
         })
 
+        const {url} = await uploadImage(user.id, result.videoId, thumbnail);
 
-        return res.status(200).json(new ApiResponse(200, {isExist: false, uploadId: result.uploadId, videoId: result.videoId, key: result.key, totalParts: chunks, chunkSize: CHUNK_SIZE}, "Multipart Upload initiated successfully"))
+        await prisma.video.update({
+          where: {
+            id: result.videoId
+          },
+          data: {
+            thumbnail: url
+          }
+        })
+
+        // remove the thumbnail from local
+        fs.rmSync(thumbnail.path);
+
+        return res.status(200).json(new ApiResponse(200, {isExist: false, uploadId: result.uploadId, videoId: result.videoId, key: result.key, totalParts: chunks, chunkSize: CHUNK_SIZE, thumbnail: url}, "Multipart Upload initiated successfully"))
     } catch (error) {
         console.error("requestMultiPartUpload error:", error);
         return next(new ApiError(500, "Internal Server Error"))
@@ -590,6 +616,102 @@ export const getReadyVideos = async (req, res, next) => {
   }
 }
 
+// get a ready video by its id
+// GET /api/videos/get-video/:videoId
+export const getVideoById = async (req, res, next) => {
+  try {
+    const {videoId} = req.params
+
+    const video = await prisma.video.findUnique({
+      where: {
+        id: videoId
+      },
+      select: {
+        id: true,
+        title: true,
+        storageKey: true,
+        description: true,
+        thumbnail: true,
+        createdAt: true,
+        updatedAt: true,
+        user: {
+          select: {
+            id: true,
+            avatar: true,
+            email: true,
+            name: true,
+            createdAt: true
+          }
+        }
+      }
+    })
+
+    return res.status(200).json(new ApiResponse(200, {video}, "Video fetched successfully"));
+  } catch (error) {
+    console.log("getReadyVideos Error", error)
+    return next(new ApiError(500, "Internal Server Error"))
+  }
+}
+
+// get ready + public videos across all users
+// GET /api/videos/get-public-videos
+export const getPublicVideos = async (req, res, next) => {
+  try {
+    const {take, idCursor, searchParam} = req.query
+
+    const takeNumber = parseInt(take) || 10;
+
+    const whereClause = {
+      isPublic: true,
+      status: 'READY',
+      ...(searchParam && {
+        title: {
+          contains: searchParam,
+          mode: 'insensitive'
+        }
+      })
+    }
+
+    const videos = await prisma.video.findMany({
+      take: takeNumber,
+      skip: idCursor ? 1 : 0,
+      ...(idCursor && {cursor: {id: idCursor}}),
+      where: whereClause,
+      orderBy: {
+        createdAt: 'desc',
+      },
+      select: {
+        id: true,
+        title: true,
+        storageKey: true,
+        description: true,
+        thumbnail: true,
+        createdAt: true,
+        updatedAt: true,
+        user: {
+          select: {
+            id: true,
+            avatar: true,
+            email: true,
+            name: true,
+            createdAt: true
+          }
+        }
+      }
+    })
+
+    if(!videos)
+      throw new ApiError(404, "Error fetching videos")
+
+    const newCursor = videos.length > 0 ? videos[videos.length - 1].id : null;
+
+    return res.status(200).json(new ApiResponse(200, {videos, take: takeNumber, idCursor: newCursor}, "Videos fetched successfully"))
+  } catch (error) {
+    console.log("getPublicVideos Error", error)
+    return next(new ApiError(500, "Internal Server Error"))
+  }
+}
+
 // deletes a given video (after published) 
 // DELETE /delete-video/:videoId
 export const deleteVideo = async (req, res, next) => {
@@ -693,15 +815,4 @@ export const markVideoUploadFailed = async (req,res,next) => {
         console.error("markVideoUploadFailed error:", error);
         return next(new ApiError(500, "Internal Server Error"))
     }
-}
-
-// stale
-export const trialVideoUpload = async (req, res, next) => {
-  const user = req.user;
-
-  const avatar = req.file
-
-  console.log(avatar);
-
-  return res.status(200).json(new ApiResponse(200, null, "video uploading has started"));
 }

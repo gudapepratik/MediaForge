@@ -30,12 +30,13 @@ const sessionMiddleware = session({
 app.use(cors({
     credentials: true,
     origin: (origin, callback) => {
-        if(!origin || origin === 'http://localhost:5173') {
+        if(!origin || origin === 'http://localhost:5173' || origin === 'https://hoppscotch.io') {
             callback(null, true)
         } else{
             callback(new Error("Not allowed by CORS"))
         }
-    }
+    },
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
 }))
 
 app.use(express.json({

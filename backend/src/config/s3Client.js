@@ -1,5 +1,6 @@
 import * as AWS from '@aws-sdk/client-s3'
 import {getSignedUrl} from '@aws-sdk/s3-request-presigner'
+import fs from 'fs'
 
 const s3 = new AWS.S3Client({
     region: process.env.STORAGE_REGION,
@@ -131,7 +132,6 @@ export const listUploadParts  = async (key, uploadId) => {
     }
 }
 
-
 export const deleteHlsVideoFiles = async (userId, videoId) => {
   try {
     const keyPrefix = `videos/${userId}/${videoId}/hls/`;
@@ -155,5 +155,29 @@ export const deleteHlsVideoFiles = async (userId, videoId) => {
   } catch (error) {
     console.log("delete Video failed", error?.message)
     throw error;
+  }
+}
+
+export const uploadImage = async (userId, videoId, imageFile) => {
+  try {
+    const filename = imageFile.filename;
+    const fileExt = imageFile.mimetype.split('/')[1]
+    const Key = `videos/${userId}/${videoId}/metadata/${filename}.${fileExt}`;
+
+    const fileContent = fs.readFileSync(imageFile.path);
+    
+    const uploadCommand = new AWS.PutObjectCommand({
+      Bucket: process.env.PUBLIC_BUCKET,
+      Key,
+      Body: fileContent,
+      ContentType: imageFile.mimetype
+    })
+
+    await s3.send(uploadCommand);
+
+    return {url: `${process.env.R2_PUBLIC_URL}/${Key}`}
+  } catch (error) {
+    console.log("S3 Error: uploadImage", error);
+    throw error
   }
 }

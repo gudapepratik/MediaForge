@@ -9,6 +9,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar"
+import { useNavigate } from "react-router"
 
 const items = [
   {
@@ -34,6 +35,11 @@ const items = [
 ]
 
 function AppSidebar() {
+  const navigate = useNavigate();
+
+  const handleNavigate = (url) => {
+    navigate(url);
+  }
   return (
     <Sidebar
       variant="none"
@@ -47,8 +53,8 @@ function AppSidebar() {
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton asChild >
                     <a
-                      href={item.url}
-                      className="flex items-center te gap-4 font-satoshi font-medium text-accent-foreground"
+                      onClick={() => handleNavigate(item.url)}
+                      className="flex cursor-pointer items-center te gap-4 font-satoshi font-medium text-accent-foreground"
                     >
                       <item.icon/>
                       <span className="md:text-base text-lg">
