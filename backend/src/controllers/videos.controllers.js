@@ -67,6 +67,7 @@ export const getUploads = async (req, res, next) => {
                   videoId: video.id,
                   uploadId: video.upload.id,
                   fileName: video.fileName,
+                  fileSize: video.fileSize,
                   checkSum: video.hash,
                   title: video.title,
                   description: video.description,

@@ -1,11 +1,23 @@
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useUpload } from "../Hooks/useUpload"
-import { useEffect } from "react";
-import { useUploadProgress } from "../Hooks/useUploadProgress";
+import { useUploadProgress } from "../Hooks/useUploadProgress"
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "./ui/card"
+import { Progress } from "./ui/progress"
+import { Button } from "./ui/button"
+import { Badge } from "./ui/badge"
+import { Pause, Play, X } from "lucide-react"
 
 export default function UploadCard({ meta }) {
-  const { pauseUpload, resumeUpload, cancelUpload } = useUpload();
-  const {progress, updateData, updateMessage} = meta.status === 'transcoding' ? useUploadProgress() : {progress: 0, updateMessage: null, updateData: null}
+  const { pauseUpload, resumeUpload, cancelUpload } = useUpload()
+  const { progress, updateMessage } =
+    meta.status === "transcoding"
+      ? useUploadProgress()
+      : { progress: 0, updateMessage: null }
 
   const [localFile, setLocalFile] = useState(null)
   const [awaitingFileSelection, setAwaitingFileSelection] = useState(false)
@@ -46,179 +58,103 @@ export default function UploadCard({ meta }) {
     }
   }
 
-  useEffect(() => {
-
-  }, [meta?.status])
-
-  const getStatusIcon = () => {
-    switch (meta.status) {
-      case "uploading":
-        return (
-          <div className="h-6 w-6 text-blue-500 animate-pulse">
-            <svg fill="currentColor" viewBox="0 0 24 24">
-              <path d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z" />
-            </svg>
-          </div>
-        )
-      case "paused":
-        return (
-          <div className="h-6 w-6 text-amber-500">
-            <svg fill="currentColor" viewBox="0 0 24 24">
-              <path d="M14,19H18V5H14M6,19H10V5H6V19Z" />
-            </svg>
-          </div>
-        )
-      case "completed":
-        return (
-          <div className="h-6 w-6 text-green-500">
-            <svg fill="currentColor" viewBox="0 0 24 24">
-              <path d="M12,2A10,10 0 0,1 22,12A10,10 0 0,1 12,22A10,10 0 0,1 2,12A10,10 0 0,1 12,2M11,16.5L18,9.5L16.59,8.09L11,13.67L7.91,10.59L6.5,12L11,16.5Z" />
-            </svg>
-          </div>
-        )
-      case "failed":
-        return (
-          <div className="h-6 w-6 text-red-500">
-            <svg fill="currentColor" viewBox="0 0 24 24">
-              <path d="M15.59,7L12,10.59L8.41,7L7,8.41L10.59,12L7,15.59L8.41,17L12,13.41L15.59,17L17,15.59L13.41,12L17,8.41L15.59,7Z" />
-            </svg>
-          </div>
-        )
-      case "aborted":
-        return (
-          <div className="h-6 w-6 text-gray-500">
-            <svg fill="currentColor" viewBox="0 0 24 24">
-              <path d="M13,13H11V7H13M13,17H11V15H13M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2Z" />
-            </svg>
-          </div>
-        )
-      default:
-        return (
-          <div className="h-6 w-6 text-gray-400">
-            <svg fill="currentColor" viewBox="0 0 24 24">
-              <path d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z" />
-            </svg>
-          </div>
-        )
+  const getStatusBadge = () => {
+    const colorMap = {
+      uploading: "text-blue-500 border-blue-500",
+      paused: "text-amber-500 border-amber-500",
+      completed: "text-green-500 border-green-500",
+      failed: "text-red-500 border-red-500",
+      aborted: "text-muted-foreground border-border",
+      transcoding: "text-purple-500 border-purple-500",
+      default: "text-muted-foreground border-border",
     }
-  }
-
-  // Added getStatusColor function
-  const getStatusColor = () => {
-    switch (meta.status) {
-      case "uploading":
-        return "bg-blue-200"
-      case "paused":
-        return "bg-amber-200"
-      case "completed":
-        return "bg-green-200"
-      case "failed":
-        return "bg-red-200"
-      case "aborted":
-        return "bg-gray-200"
-      default:
-        return "bg-gray-200"
-    }
-  }
-
-  const getBorderColor = () => {
-    switch (meta.status) {
-      case "uploading":
-        return "border-blue-200"
-      case "paused":
-        return "border-amber-200"
-      case "completed":
-        return "border-green-200"
-      case "failed":
-        return "border-red-200"
-      case "aborted":
-        return "border-gray-200"
-      default:
-        return "border-gray-200"
-    }
+    const colorClass = colorMap[meta.status] || colorMap.default
+    const label = meta.status.charAt(0).toUpperCase() + meta.status.slice(1)
+    return <Badge variant="outline" className={colorClass}>{label}</Badge>
   }
 
   const isActionable = meta.status === "uploading" || meta.status === "paused"
-  const showProgress = meta.status !== "completed" && meta.status !== "failed" && meta.status !== "aborted"
+  const showProgress =
+    meta.status !== "completed" &&
+    meta.status !== "failed" &&
+    meta.status !== "aborted"
 
   return (
-    <div
-      className={`size-fit bg-white border-2 ${getBorderColor()} rounded-xl p-6 shadow-sm hover:shadow-md transition-all duration-200 flex items-center gap-6`}
-    >
-      <input id={`file-${meta.videoId}`} type="file" className="hidden" onChange={onFilePick} accept="video/*" />
+    <Card className="w-full bg-card text-card-foreground border border-border rounded-xl overflow-hidden hover:shadow-md transition">
+      <input
+        id={`file-${meta.videoId}`}
+        type="file"
+        className="hidden"
+        onChange={onFilePick}
+        accept="video/*"
+      />
 
-      <div className="flex flex-col items-center justify-center space-y-3">
-        <div className="w-16 h-16 bg-gray-50 rounded-lg flex items-center justify-center">
-          <div className="h-8 w-8 text-gray-400">
-            <svg fill="currentColor" viewBox="0 0 24 24">
-              <path d="M17,10.5V7A1,1 0 0,0 16,6H4A1,1 0 0,0 3,7V17A1,1 0 0,0 4,18H16A1,1 0 0,0 17,17V13.5L21,17.5V6.5L17,10.5Z" />
-            </svg>
-          </div>
+      <CardHeader className="flex flex-row items-center gap-4 pb-2">
+        {/* Thumbnail */}
+        <div className="w-28 h-16 bg-muted rounded-lg overflow-hidden flex items-center justify-center">
+          {meta.thumbnail ? (
+            <img
+              src={meta.thumbnail}
+              alt="thumbnail"
+              className="w-full h-full object-cover"
+            />
+          ) : (
+            <span className="text-sm text-muted-foreground">No Thumbnail</span>
+          )}
         </div>
-        <div className="flex items-center justify-center">{getStatusIcon()}</div>
-      </div>
 
-      <div className="flex-1 space-y-4">
-        <div>
-          <p className="text-lg font-medium text-gray-900 truncate" title={meta.fileName}>
-            {meta.fileName}
+        {/* Title + File Info */}
+        <div className="flex flex-col flex-1 overflow-hidden">
+          <CardTitle className="text-base truncate">
+            {meta.title || meta.fileName}
+          </CardTitle>
+          <p className="text-xs text-muted-foreground truncate">
+            {(meta.fileSize / (1024 * 1024)).toFixed(2)} MB
           </p>
-          <p className="text-sm text-gray-500 capitalize mt-1">{meta.status}</p>
         </div>
 
+        {/* Status Badge */}
+        {getStatusBadge()}
+      </CardHeader>
+
+      <CardContent className="space-y-3">
+        {/* Progress */}
         {showProgress && (
-          <div className="space-y-2">
-            <div className="w-full bg-gray-200 rounded-full h-2">
-              <div
-                className={`h-2 rounded-full transition-all duration-300 ${
-                  meta.status === "uploading"
-                    ? "bg-blue-500"
-                    : meta.status === "paused"
-                      ? "bg-amber-500"
-                      : "bg-gray-400"
-                }`}
-                style={{ width: `${meta.percentage || 0}%` }}
-              ></div>
-            </div>
-            <div className="text-right">
-              <span className="text-sm font-medium text-gray-600">{meta.percentage || 0}%</span>
+          <div className="space-y-1">
+            <Progress value={progress} className="h-2" />
+            <div className="flex justify-between text-xs text-muted-foreground">
+              <span>{updateMessage || "Processing..."}</span>
+              <span>{progress.toFixed(0)}%</span>
             </div>
           </div>
         )}
 
+        {/* Actions */}
         {isActionable && (
-          <div className="flex gap-3">
-            <button
+          <div className="flex items-center justify-end gap-2">
+            <Button
+              size="icon"
+              variant="outline"
+              className="border-border text-foreground hover:bg-muted"
               onClick={handlePauseResume}
-              className="flex items-center justify-center w-10 h-10 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
             >
               {meta.status === "uploading" ? (
-                <div className="h-4 w-4">
-                  <svg fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M14,19H18V5H14M6,19H10V5H6V19Z" />
-                  </svg>
-                </div>
+                <Pause className="w-4 h-4" />
               ) : (
-                <div className="h-4 w-4">
-                  <svg fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M8,5.14V19.14L19,12.14L8,5.14Z" />
-                  </svg>
-                </div>
+                <Play className="w-4 h-4" />
               )}
-            </button>
-            <button
+            </Button>
+            <Button
+              size="icon"
+              variant="outline"
+              className="border-border text-destructive hover:bg-muted"
               onClick={() => cancelUpload(meta.videoId)}
-              className="flex items-center justify-center w-10 h-10 border border-gray-300 rounded-lg text-gray-500 hover:text-red-500 hover:bg-gray-50 transition-colors"
             >
-              <div className="h-4 w-4">
-                <svg fill="currentColor" viewBox="0 0 24 24">
-                  <path d="M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41Z" />
-                </svg>
-              </div>
-            </button>
+              <X className="w-4 h-4" />
+            </Button>
           </div>
         )}
-      </div>
-    </div>
+      </CardContent>
+    </Card>
   )
 }
