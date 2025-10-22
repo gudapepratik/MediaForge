@@ -591,25 +591,52 @@ export const markMultiPartUploadComplete = async (req,res,next) => {
 // <------------------ NORMAL VIDEO CONTROLLERS ------------------->
 
 // get completely ready to stream videos of an user
-// GET /api/videos/get-ready-videos
+// GET /api/videos/get-ready-videos?take=9&page=3
 export const getReadyVideos = async (req, res, next) => {
   try {
     const user = req.user;
+
+    const takeNumber = parseInt(req.query.take) || 9;
+    const pageNumber = parseInt(req.query.page) || 1;
+    const skip = (pageNumber-1) * takeNumber;
 
     if(!user) 
       throw new ApiError(402, "User not found");
 
     const videos = await prisma.video.findMany({
+      take: takeNumber,
+      skip,
       where: {
         userId: user.id,
-        status: {equals: 'READY'}
+        status: 'READY'
       },
       orderBy: {
         createdAt: 'desc'
+      },
+      select: {
+        id: true,
+        title: true,
+        storageKey: true,
+        description: true,
+        thumbnail: true,
+        createdAt: true,
+        updatedAt: true,
+        user: {
+          select: {
+            id: true,
+            avatar: true,
+            email: true,
+            name: true,
+            createdAt: true
+          }
+        }
       }
     })
 
-    return res.status(200).json(new ApiResponse(200, {videos}, "Videos fetched successfully"));
+    const totalVideos = await prisma.video.count({where: {userId: user.id, status: 'READY'}});
+    const totalPages = Math.ceil(totalVideos / takeNumber);
+    
+    return res.status(200).json(new ApiResponse(200, {videos, currentPage: pageNumber, totalPages}, "Videos fetched successfully"));
   } catch (error) {
     console.log("getReadyVideos Error", error)
     return next(new ApiError(500, "Internal Server Error"))
@@ -659,7 +686,7 @@ export const getPublicVideos = async (req, res, next) => {
   try {
     const {take, idCursor, searchParam} = req.query
 
-    const takeNumber = parseInt(take) || 10;
+    const takeNumber = parseInt(take) || 9;
 
     const whereClause = {
       isPublic: true,

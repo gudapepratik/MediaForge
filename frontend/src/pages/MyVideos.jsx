@@ -7,10 +7,15 @@ import config from '../../config';
 import VideoPlayer from '../components/VideoPlayer';
 import { Badge } from '../components/ui/badge';
 import { Spinner } from '../components/ui/spinner';
+import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from '../components/ui/pagination';
+import HomeVideoCard from '../components/HomeVideoCard';
 
 function Videos() {
   const [videos, setVideos] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const limit = 2;
 
   const hlsOptions = {
     autoplay: false,
@@ -20,17 +25,22 @@ function Videos() {
     preload: "auto",
   };
 
-  const fetchVideos = async () => {
+  useEffect(() => {
+    fetchVideos(currentPage);
+  }, [currentPage]);
+
+  const fetchVideos = async (page) => {
     try {
       setIsLoading(true);
-      const {data} = await axios.get(`${config.BACKEND_ENDPOINT}/api/videos/get-ready-videos`, {
+      const url = `${config.BACKEND_ENDPOINT}/api/videos/get-ready-videos?take=${limit}&page=${page}`
+      const {data} = await axios.get(url, {
         withCredentials: true
       })
       console.log(data.data.videos);
-      const videosData = data.data.videos?.map((video) => ({...video, hlsOptions: {...hlsOptions, sources: [{src: `https://pub-b462f8f0e6784b8fbdbfca6e0cd1d5cb.r2.dev/${video.storageKey}`, type: 'application/x-mpegURL'}]}}))
-      console.log(videosData);
-      setVideos(videosData);
-
+      // const videosData = data.data.videos?.map((video) => ({...video, hlsOptions: {...hlsOptions, sources: [{src: `https://pub-b462f8f0e6784b8fbdbfca6e0cd1d5cb.r2.dev/${video.storageKey}`, type: 'application/x-mpegURL'}]}}))
+      // console.log(videosData);
+      setVideos(data.data.videos);
+      setTotalPages(data.data.totalPages);
     } catch (error) {
       console.log('Error fetching videos', error);
     } finally{
@@ -38,31 +48,48 @@ function Videos() {
     }
   }
 
-  useEffect(() => {
-    fetchVideos();
-  }, []);
 
   return (
     <>
       <div className='w-full h-screen p-4 md:p-6 bg-background text-white'>
-        {/* TOP SECTION*/}
-        {/* <VideoUpload/> */}
+      
+        <div className='grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 justify-items-center p-2 md:p-4'>
+          {videos.map((video, key) => (
+            <HomeVideoCard video={video} key={key}/>
+          ))}
+        </div>
 
-        {isLoading ? (
-          <Badge>
-            <Spinner/> Loading
-          </Badge>
-        ): (
-          <div className='w-full grid grid-cols-3 p-4 gap-4 '>
-            {videos && (
-              videos.map((video, key) => (
-                <VideoPlayer variant='compact' key={key} videoUrl={video.hlsOptions.sources[0].src} title={video.fileName} />
-              ))
-            )}
-          </div>
-        )}
+        <div>
+          <Pagination>
+            <PaginationContent>
+              <PaginationItem>
+                <PaginationPrevious
+                  onClick = {() => currentPage > 1 && setCurrentPage(currentPage - 1)}
+                  className={currentPage === 1 ? "pointer-events-none opacity-50" : ""}
+                />
+              </PaginationItem>
 
-        {/* <VideoCard key={key} video={video} options={video.hlsOptions}/> */}
+              {[...Array(totalPages)].map((_, i) => (
+                <PaginationItem key={i}>
+                  <PaginationLink
+                    onClick={() => setCurrentPage(i + 1)}
+                    isActive={currentPage === i + 1}
+                    className={`cursor-pointer`}
+                  >
+                    {i + 1}
+                  </PaginationLink>
+                </PaginationItem>
+              ))}
+
+              <PaginationItem>
+                <PaginationNext
+                  onClick = {() => currentPage < totalPages && setCurrentPage(currentPage + 1)}
+                  className={currentPage === totalPages ? "pointer-events-none opacity-50" : ""}
+                />
+              </PaginationItem>
+            </PaginationContent>
+          </Pagination>
+        </div>
       </div>
     </>
   )
