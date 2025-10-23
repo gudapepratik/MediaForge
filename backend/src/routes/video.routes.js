@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { checkAuth } from "../middlewares/auth.middleware.js";
-import { createUploadPartPresignedUrl, deleteVideo, getPendingUploadParts, getPublicVideos, getReadyVideos, getTranscodes, getUploadById, getUploads, getUploadStatus, getVideoById, markMultiPartUploadComplete, markUploadPartCompleted, markUploadPartFailed, markVideoUploadCancelled, markVideoUploadFailed, markVideoUploadSuccess, requestMultiPartUpload, requestVideoUpload, updateUploadStatus } from "../controllers/videos.controllers.js";
+import { createUploadPartPresignedUrl, deleteVideo, getPendingUploadParts, getPublicVideos, getReadyVideos, getTranscodes, getUploadById, getUploads, getUploadStatus, getVideoById, markMultiPartUploadComplete, markUploadPartCompleted, markUploadPartFailed, markVideoUploadCancelled, markVideoUploadFailed, markVideoUploadSuccess, requestMultiPartUpload, requestVideoUpload, toggleVideoVisibility, updateUploadStatus } from "../controllers/videos.controllers.js";
 import upload from '../config/multer.js'
 
 const router = Router()
@@ -25,5 +25,6 @@ router.put('/complete-multipart-upload/:videoId', checkAuth, markMultiPartUpload
 router.get('/get-ready-videos', checkAuth, getReadyVideos);
 router.get('/get-video/:videoId', getVideoById);
 router.get('/get-public-videos', getPublicVideos);
+router.put('/toggle-video-visibility', checkAuth, toggleVideoVisibility);
 router.delete('/delete-video/:videoId', checkAuth, deleteVideo);
 export default router;

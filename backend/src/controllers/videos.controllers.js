@@ -662,6 +662,7 @@ export const getVideoById = async (req, res, next) => {
         thumbnail: true,
         createdAt: true,
         updatedAt: true,
+        isPublic: true,
         user: {
           select: {
             id: true,
@@ -716,6 +717,7 @@ export const getPublicVideos = async (req, res, next) => {
         thumbnail: true,
         createdAt: true,
         updatedAt: true,
+        isPublic: true,
         user: {
           select: {
             id: true,
@@ -736,6 +738,42 @@ export const getPublicVideos = async (req, res, next) => {
     return res.status(200).json(new ApiResponse(200, {videos, take: takeNumber, idCursor: newCursor}, "Videos fetched successfully"))
   } catch (error) {
     console.log("getPublicVideos Error", error)
+    return next(new ApiError(500, "Internal Server Error"))
+  }
+}
+
+// toggle video visibility
+// PUT /api/videos/toggle-video-visibility
+export const toggleVideoVisibility = async (req, res, next) => {
+  try {
+    const user = req.user;
+    const {videoId, isPublic} = req.body
+
+    if(!user)
+      throw new ApiError(404, "User Not Found");
+
+    const isValid = await prisma.video.findUnique({
+      where: {id: videoId},
+      select: {
+        userId: true
+      }
+    })
+
+    if(isValid.userId !== user.id)
+      throw new ApiError(402, "User is unauthorized to perform this action")
+
+    await prisma.video.update({
+      where: {
+        id: videoId
+      },
+      data: {
+        isPublic
+      }
+    })
+
+    return res.status(200).json(new ApiResponse(200, {visibility: isPublic}, `Video is made ${isPublic ? "Public" : "Private"} Successfully`));
+  } catch (error) {
+    console.log("toggleVideoVisibility Error", error)
     return next(new ApiError(500, "Internal Server Error"))
   }
 }

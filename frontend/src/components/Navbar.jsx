@@ -72,7 +72,7 @@ function Navbar() {
             )}
 
             {/* Notifications */}
-            <DropdownMenu>
+            {/* <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <button className="relative p-2 rounded-full hover:bg-muted/50 focus:outline-none focus:ring-2 focus:ring-ring">
                   <BellRing className="h-6 w-6" />
@@ -96,7 +96,7 @@ function Navbar() {
                   </DropdownMenuItem>
                 )}
               </DropdownMenuContent>
-            </DropdownMenu>
+            </DropdownMenu> */}
 
             {/* Avatar */}
             <DropdownMenu className="font-satoshi">
