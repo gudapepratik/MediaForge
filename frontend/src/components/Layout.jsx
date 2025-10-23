@@ -3,6 +3,7 @@ import { Outlet, useLocation } from "react-router-dom";
 import { SidebarProvider } from "./ui/sidebar";
 import AppSidebar from "./AppSidebar";
 import Navbar from "./Navbar";
+import { Toaster } from "./ui/sonner";
 
 function Layout() {
   const location = useLocation();
@@ -25,6 +26,7 @@ function Layout() {
           </main>
         </div>
       </div>
+      <Toaster richColors position="bottom-right" closeButton/>
     </SidebarProvider>
   );
 }

@@ -51,11 +51,11 @@ function Videos() {
 
   return (
     <>
-      <div className='w-full h-screen p-4 md:p-6 bg-background text-white'>
+      <div className='w-full min-h-[calc(100vh-64px)] md:min-h-[calc(100vh-80px)] max-h-screen flex flex-col justify-between p-4 md:p-6 bg-background text-white'>
       
         <div className='grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 justify-items-center p-2 md:p-4'>
           {videos.map((video, key) => (
-            <HomeVideoCard video={video} key={key}/>
+            <HomeVideoCard video={video} key={video?.id}/>
           ))}
         </div>
 

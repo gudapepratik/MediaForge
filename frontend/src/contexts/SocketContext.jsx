@@ -5,6 +5,7 @@ import { useContext } from "react";
 import { createContext } from "react";
 import { io } from "socket.io-client";
 import config from "../../config";
+import {toast} from 'sonner'
 
 export const SocketContext = createContext(null);
 
@@ -33,6 +34,32 @@ export const SocketProvider = ({children}) => {
         console.log("Socket client joined User Room");
         setIsConnected(true);
       } else console.log('Error occurred while joining user Room');
+    })
+
+    socket.on('transcode-update', (data) => {
+      const { videoId, stage, progress} = data
+      if(!videoId) return;
+
+      if(stage === "downloading" && progress === 5) {
+        toast.info('Transcoding Started', {
+          message: `Transcoding for ${videoId} has begun.`
+        })  
+        return;
+      } 
+
+      if(stage === "completed") {
+        toast.success('Transcoding Complete', {
+          message: `Video ${videoId} is ready to stream!`
+        })  
+        return;
+      }
+
+      if(stage === "failed") {
+        toast.error('Transcoding Failed', {
+          message: `Video ${videoId} encountered an error.`
+        })  
+        return;
+      }
     })
     
     return () => {
