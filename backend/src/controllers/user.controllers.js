@@ -34,7 +34,7 @@ export const updateUser = async (req, res, next) => {
     const newAvatar = req.file;
     updatePayload.avatar = currentUser.avatar;
 
-    if(avatar) {
+    if(newAvatar) {
       // upload
       try {
         const {url} = await uploadImage(user.id, null, newAvatar, true);
