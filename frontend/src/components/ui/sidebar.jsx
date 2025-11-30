@@ -3,7 +3,7 @@ import { Slot } from "@radix-ui/react-slot"
 import { cva } from "class-variance-authority";
 import { PanelLeft } from "lucide-react"
 
-import { useIsMobile } from "@/hooks/use-mobile.jsx"
+import { useIsMobile } from "@/Hooks/use-mobile.jsx"
 import { cn } from "@/lib/utils.js"
 import { Button } from "@/components/ui/button.jsx"
 import { Input } from "@/components/ui/input.jsx"
