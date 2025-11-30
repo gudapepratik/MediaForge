@@ -27,6 +27,8 @@ const sessionMiddleware = session({
     cookie: {maxAge: 30 * 24 * 60 * 60 * 1000} // 30days
 })
 
+app.set("trust proxy", true);
+
 app.use(cors({
     credentials: true,
     origin: (origin, callback) => {
