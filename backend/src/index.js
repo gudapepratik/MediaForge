@@ -24,7 +24,7 @@ const subClient = pubClient.duplicate();
 
 const io = new Server(server, {
   cors: {
-    origin: ['http://localhost:5173'],
+    origin: ['http://localhost:5173', 'https://media-forge-omega.vercel.app'],
     credentials: true,
     methods: ['GET', 'POST']
   },

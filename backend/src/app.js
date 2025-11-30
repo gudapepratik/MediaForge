@@ -30,7 +30,7 @@ const sessionMiddleware = session({
 app.use(cors({
     credentials: true,
     origin: (origin, callback) => {
-        if(!origin || origin === 'http://localhost:5173' || origin === 'https://hoppscotch.io') {
+        if(!origin || origin === 'http://localhost:5173' || origin === 'https://hoppscotch.io' || origin === 'https://media-forge-omega.vercel.app') {
             callback(null, true)
         } else{
             callback(new Error("Not allowed by CORS"))
