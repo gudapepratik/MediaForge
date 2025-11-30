@@ -16,6 +16,8 @@ const app = express();
 const pgPool = new pg.Pool({connectionString: process.env.DATABASE_URL})
 const pgSession = connectPgSimple(session)
 
+const isProduction = process.env.ENVIRONMENT === "PROD";
+
 const sessionMiddleware = session({
     store: new pgSession({
         pool: pgPool,
@@ -24,10 +26,15 @@ const sessionMiddleware = session({
     secret: process.env.SESSION_SECRET,
     resave: false,
     saveUninitialized: false,
-    cookie: {maxAge: 30 * 24 * 60 * 60 * 1000} // 30days
+    cookie: {
+      maxAge: 30 * 24 * 60 * 60 * 1000, // 30days
+      sameSite: isProduction ? "none" : "lax",
+      httpOnly: true,
+      secure: isProduction
+    } 
 })
 
-app.set("trust proxy", true);
+app.set("trust proxy", isProduction);
 
 app.use(cors({
     credentials: true,
