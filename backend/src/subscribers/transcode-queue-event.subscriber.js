@@ -3,7 +3,6 @@ import connection from "../config/redis.js";
 import { io } from '../index.js'
 import { prisma } from "../config/db.js";
 
-
 const subscriber = new QueueEvents('transcode-events-queue', {
   connection: connection,
 })

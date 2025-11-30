@@ -4,6 +4,7 @@ import UploadQueue from "../utils/UploadQueue";
 import { uploadPartWorker } from "../utils/UploadPartWorker";
 import { sliceForPart, CHUNK_SIZE, getFileHash } from "../utils/upload.utils";
 import evnConfig from '../../config'
+import {toast} from 'sonner'
 
 /*
   1. this is the implementation of an "upload manager" which manages all the upload queues.
@@ -103,10 +104,16 @@ export function useUploadManager() {
       try {
         await axios.put(`${evnConfig.BACKEND_ENDPOINT}/api/videos/complete-multipart-upload/${uploadMeta.videoId}`,null, {withCredentials: true} );
         updateUploadLocal(uploadMeta.videoId, { status: "completed", percentage: 100 });
+        toast.success('Video Uploaded', {
+          description: `Video ${uploadMeta.videoId} has been uploaded successfully. Transcoding will start soon..`
+        })
         queuesRef.current.delete(uploadMeta.videoId); // remove upload task from queue
         // wait... remove the completed upload from uploads
         // setUploads((uploads) => uploads.filter(upload => upload.videoId !== uploadMeta.videoId));
       } catch (err) {
+        toast.error('Video Upload Failed', {
+          description: `Video ${uploadMeta.videoId} upload is Failed!!, Please try again`
+        })
         console.error(`FAILED: Complete upload for videoId ${uploadMeta.videoId}`, err);
         updateUploadLocal(uploadMeta.videoId, { status: "failed" });
       }
@@ -164,9 +171,13 @@ export function useUploadManager() {
     const q = queuesRef.current.get(videoId);
     if (q) q.pause(); // hard pause (abort in-flight)
     updateUploadLocal(videoId, { status: "paused" });
-
+    
     // update server upload state
     await updateUploadStatusServer(videoId, "paused");
+
+    toast.info('Video Upload Paused', {
+      description: `Video ${videoId} upload is Paused.`
+    })
   }
 
   async function resumeUpload(videoId, file = null) {
@@ -179,6 +190,10 @@ export function useUploadManager() {
       updateUploadLocal(videoId, { status: "uploading" });
       // update server upload state
       await updateUploadStatusServer(videoId, "uploading");
+
+      toast.info('Video Upload Resumed', {
+        description: `Video ${videoId} upload is Resumed. See uploads section for further updates`
+      })
       return;
     }
 
@@ -191,6 +206,9 @@ export function useUploadManager() {
       throw new Error("Selected file doesn't match original upload. Please select the correct file.");
     }
     console.log("started..")
+    toast.info('Video Upload Resumed', {
+      description: `Video ${videoId} upload is Resumed. See uploads section for further updates`
+    })
     startUploadWithFile(videoId, file);
   }
 
@@ -199,6 +217,9 @@ export function useUploadManager() {
     if (q) q.cancelAll();
     try {
       await axios.delete(`${evnConfig.BACKEND_ENDPOINT}/api/videos/cancel-multipart-upload/${videoId}`, { withCredentials: true });
+      toast.info('Video Upload Aborted', {
+        description: `Video ${videoId} upload is Aborted and will be removed shortly.`
+      })
     } catch (err) { console.warn("Cancel API failed", err); }
     updateUploadLocal(videoId, { status: "aborted" });
   }
@@ -247,6 +268,10 @@ export function useUploadManager() {
 
     // navigate to uploads page or let UI handle it
     await startUploadWithFile(payload.videoId, videoFile, newMeta);
+
+    toast.info('Video Upload Started', {
+      description: `Video ${payload.videoId} upload has been Started. See uploads section for further updates`
+    })
   }
 
   return {

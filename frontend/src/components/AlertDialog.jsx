@@ -12,11 +12,11 @@ import {
 } from "@/components/ui/alert-dialog"
 import { Button } from './ui/button'
 
-function AlertDialog({actionText, title, description, actionHandler}) {
+function AlertDialog({actionText, title, description, actionHandler, customStyle = ''}) {
   return (
     <AlertDialogComp>
       <AlertDialogTrigger asChild>
-        <Button variant='outline'>{actionText}</Button>
+        <Button className={`${customStyle}`} variant='outline'>{actionText}</Button>
       </AlertDialogTrigger>
       <AlertDialogContent>
         <AlertDialogHeader>

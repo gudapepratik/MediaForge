@@ -1,7 +1,6 @@
-
 import { execFile, execFileSync } from "child_process";
 import ffmpegPath from "ffmpeg-static";
-   
+
 console.log("FFmpeg path:", ffmpegPath);
 execFile(ffmpegPath, ["-version"], (error, stdout, stderr) => {
   if (error) {

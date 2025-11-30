@@ -110,7 +110,7 @@ function Navbar() {
               </DropdownMenuTrigger>
 
               <DropdownMenuContent align="end" className="w-48">
-                <DropdownMenuItem>Account</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => navigate('/account')}>Account</DropdownMenuItem>
                 <DropdownMenuSub>
                   <DropdownMenuSubTrigger>
                     Appearance: <span className="ml-1 capitalize">{theme}</span>
@@ -127,7 +127,6 @@ function Navbar() {
                     ))}
                   </DropdownMenuSubContent>
                 </DropdownMenuSub>
-                <DropdownMenuItem>Settings</DropdownMenuItem>
                 <DropdownMenuItem
                   disabled={!isAuthenticated}
                   onClick={handleLogout}

@@ -5,17 +5,20 @@ import { Server } from 'socket.io';
 import passport from 'passport';
 import initSocketio from './socketio/socket.js';
 import {createAdapter} from '@socket.io/redis-adapter'
-import Redis from 'ioredis';
+import IORedis from 'ioredis';
 
 const server = createServer(app);
 
 // redis adapter setup
-const pubClient = new Redis({
-  host: process.env.REDIS_HOST,
-  port: process.env.REDIS_PORT,
-  password: process.env.REDIS_PASSWORD
-})
+// const pubClient = new IORedis({
+//   host: process.env.REDIS_HOST,
+//   port: process.env.REDIS_PORT,
+//   password: process.env.REDIS_PASSWORD
+// })
+
+const pubClient = new IORedis(process.env.REDIS_URL);
 const subClient = pubClient.duplicate();
+
 // socket.io server
 // const io = new Server(server, {cors: {origin: ['*'], credentials: true, methods: ['GET', 'POST']}});
 
@@ -27,6 +30,7 @@ const io = new Server(server, {
   },
   adapter: createAdapter(pubClient, subClient)
 })
+
 // authenticates the socket client
 io.use((socket, next) => {
   sessionMiddleware(socket.request, {}, next);

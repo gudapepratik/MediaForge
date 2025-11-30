@@ -1,6 +1,7 @@
 import { Router } from "express";
 import authRoutes from './auth.routes.js'
 import videoRoutes from './video.routes.js'
+import userRoutes from './user.routes.js'
 
 const router = Router()
 
@@ -10,5 +11,6 @@ router.get('/', (req,res) => {
 
 router.use('/auth', authRoutes)
 router.use('/videos', videoRoutes)
+router.use('/user', userRoutes);
 
 export default router

@@ -17,6 +17,7 @@ import {UploadProvider} from './contexts/UploadContext.jsx'
 import { SocketProvider } from "./contexts/SocketContext.jsx";
 import { ThemeProvider } from "./components/ThemeProvider.jsx";
 import WatchVideo from "./pages/WatchVideo.jsx";
+import Account from "./pages/Account";
 
 const router = createBrowserRouter(
   createRoutesFromElements(
@@ -27,6 +28,7 @@ const router = createBrowserRouter(
       {/* <Route path="/login" element={<LoginForm/>}/> */}
       <Route path="/uploads" element={<Uploads/>}/>
       <Route path="/videos" element={<Videos/>}/>
+      <Route path="/account" element={<Account/>}/>
     </Route>
   )
 )

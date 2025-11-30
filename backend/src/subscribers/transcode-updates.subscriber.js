@@ -1,12 +1,8 @@
-import Redis from "ioredis";
+import IORedis from "ioredis";
 import { io } from '../index.js'
 import { prisma } from "../config/db.js";
 
-const subscriber = new Redis({
-  host: process.env.REDIS_HOST,
-  port: process.env.REDIS_PORT,
-  password: process.env.REDIS_PASSWORD
-})
+const subscriber = new IORedis(process.env.REDIS_URL);
 
 const channel = "video:updates:*";
 

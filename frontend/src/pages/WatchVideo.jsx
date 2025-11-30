@@ -40,7 +40,6 @@ function WatchVideo() {
 
   const handleVisibilityToggle = async () => {
     try {
-      console.log("clicked!!")
       const {data} = await axios.put(`${config.BACKEND_ENDPOINT}/api/videos/toggle-video-visibility`, {videoId: video?.id, isPublic: !video?.isPublic}, {withCredentials: true})
       
       setVideo(v => ({...v, isPublic: !v.isPublic}))

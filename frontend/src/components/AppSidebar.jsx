@@ -1,4 +1,4 @@
-import { Home, Video, Upload, Settings } from "lucide-react"
+import { Home, Video, Upload, Settings, UserCog } from "lucide-react"
 
 import {
   Sidebar,
@@ -28,9 +28,9 @@ const items = [
     icon: Upload,
   },
   {
-    title: "Settings",
-    url: "/settings",
-    icon: Settings,
+    title: "My Account",
+    url: "/account",
+    icon: UserCog,
   },
 ]
 

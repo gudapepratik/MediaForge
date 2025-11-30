@@ -10,7 +10,7 @@ const s3 = new AWS.S3Client({
         secretAccessKey: process.env.STORAGE_SECRETKEY,
     },
     // forcePathStyle: process.env.STORAGE_ENDPOINT.includes("localhost"), // required for minio dev only
-    // forcePathStyle: true
+    forcePathStyle: true
 });
 
 const getUploadKey = (userId, fileName, videoId) => {
@@ -136,7 +136,7 @@ export const deleteHlsVideoFiles = async (userId, videoId) => {
   try {
     const keyPrefix = `videos/${userId}/${videoId}/hls/`;
     const listObjectsCommand = new AWS.ListObjectsV2Command({
-      Bucket: 'public-videos-mediaforge',
+      Bucket: process.env.PUBLIC_BUCKET,
       Prefix: keyPrefix,
     })
 
@@ -158,11 +158,11 @@ export const deleteHlsVideoFiles = async (userId, videoId) => {
   }
 }
 
-export const uploadImage = async (userId, videoId, imageFile) => {
+export const uploadImage = async (userId, videoId, imageFile, isAvatar = false) => {
   try {
     const filename = imageFile.filename;
     const fileExt = imageFile.mimetype.split('/')[1]
-    const Key = `videos/${userId}/${videoId}/metadata/${filename}.${fileExt}`;
+    const Key = isAvatar ? `users/${userId}/avatar/${filename}.${fileExt}` : `videos/${userId}/${videoId}/metadata/${filename}.${fileExt}`;
 
     const fileContent = fs.readFileSync(imageFile.path);
     
@@ -178,6 +178,20 @@ export const uploadImage = async (userId, videoId, imageFile) => {
     return {url: `${process.env.R2_PUBLIC_URL}/${Key}`}
   } catch (error) {
     console.log("S3 Error: uploadImage", error);
+    throw error
+  }
+}
+
+export const deleteImage = async (key) => {
+  try {
+    const command = new AWS.DeleteObjectCommand({
+      BUCKET: process.env.PUBLIC_BUCKET,
+      Key: key
+    })
+
+    await s3.send(command);
+  } catch (error) {
+    console.log("S3 Error: deleteImage", error);
     throw error
   }
 }

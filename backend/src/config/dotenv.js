@@ -1,5 +1,7 @@
 import dotenv from 'dotenv'
 
-dotenv.config({
-    path: ".env"
-})
+if(process.env.ENVIRONMENT !== "PROD") {
+  dotenv.config({
+      path: ".env"
+  })
+}

@@ -44,7 +44,7 @@ router.post('/logout', checkAuth, (req,res,next) => {
         if(err) {
             next(new ApiError(500, "Unexpected Error occurred: Logout Failed", err))
         }
-        console.log("heelllla yaaaya")
+        
         // clear the session and cookie
         req.session.destroy((err) => {
             if(err)

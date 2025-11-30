@@ -17,6 +17,7 @@ import { Label } from './ui/label'
 import { Switch } from './ui/switch'
 import axios from 'axios'
 import config from '../../config'
+import {toast} from 'sonner'
 import { useUpload } from '../Hooks/useUpload'
 
 function UploadVideoDialog() {
@@ -57,6 +58,9 @@ function UploadVideoDialog() {
       //   }
       // })
     } catch (error) {
+      toast.error('Upload Error', {
+        description: "An unexpected error has occurred. Please try again later"
+      })
       console.log("Error occurred while uploading video", error)
     }
   }
