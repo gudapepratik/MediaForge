@@ -7,6 +7,7 @@ yarn-error.log
 
 # Env files (better to pass via docker-compose)
 .env
+.env.worker
 
 # Git
 .git

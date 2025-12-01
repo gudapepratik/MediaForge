@@ -50,7 +50,7 @@ function Navbar() {
           {/* Left Section */}
           <Item className="flex-row items-center gap-3">
             <SidebarTrigger className="w-8 h-8" />
-            <h1 className="font-extrabold text-lg md:text-2xl">MediaForge</h1>
+            <NavLink to={'/'} className={'font-extrabold text-lg md:text-2xl'}>MediaForge</NavLink>
           </Item>
 
           {/* Search Bar */}
@@ -127,13 +127,22 @@ function Navbar() {
                     ))}
                   </DropdownMenuSubContent>
                 </DropdownMenuSub>
-                <DropdownMenuItem
-                  disabled={!isAuthenticated}
-                  onClick={handleLogout}
-                  className="bg-red-600 hover:!bg-red-700 text-white focus:!bg-red-700"
-                >
-                  Sign out
-                </DropdownMenuItem>
+                {!isAuthenticated ? (
+                  <DropdownMenuItem
+                    onClick={() => navigate("/login")}
+                    className="md:hidden bg-red-600 hover:!bg-red-700 text-white focus:!bg-red-700"
+                  >
+                    Sign in
+                  </DropdownMenuItem>
+                ): (
+                  <DropdownMenuItem
+                    disabled={!isAuthenticated}
+                    onClick={handleLogout}
+                    className="bg-red-600 hover:!bg-red-700 text-white focus:!bg-red-700"
+                  >
+                    Sign out
+                  </DropdownMenuItem>
+                )}
               </DropdownMenuContent>
             </DropdownMenu>
           </Item>

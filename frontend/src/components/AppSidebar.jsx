@@ -43,18 +43,18 @@ function AppSidebar() {
   return (
     <Sidebar
       variant="none"
-      className="collapsed:w-24 pt-16 md:pt-20 bg-background"
+      className="collapsed:w-24 pt-16 md:pt-20  bg-background"
     >
       <SidebarContent className="bg-background">
         <SidebarGroup>
           <SidebarGroupContent>
             <SidebarMenu className="">
               {items.map((item) => (
-                <SidebarMenuItem key={item.title}>
+                <SidebarMenuItem key={item.title} className={''}>
                   <SidebarMenuButton asChild >
                     <a
                       onClick={() => handleNavigate(item.url)}
-                      className="flex cursor-pointer items-center te gap-4 font-satoshi font-medium text-accent-foreground"
+                      className="flex cursor-pointer items-center gap-4 font-satoshi font-medium text-accent-foreground"
                     >
                       <item.icon/>
                       <span className="md:text-base text-lg">
