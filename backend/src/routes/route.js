@@ -9,6 +9,10 @@ router.get('/', (req,res) => {
     return res.json({message: "Welcome to MEDIAFORGE API"})
 })
 
+router.get('/healthz', (req, res) => {
+  return res.status(200);
+})
+
 router.use('/auth', authRoutes)
 router.use('/videos', videoRoutes)
 router.use('/user', userRoutes);
