@@ -39,7 +39,7 @@ app.set("trust proxy", isProduction);
 app.use(cors({
     credentials: true,
     origin: (origin, callback) => {
-        if(!origin || origin === 'http://localhost:5173' || origin === 'https://hoppscotch.io' || origin === 'https://media-forge-omega.vercel.app') {
+        if(!origin || origin === 'http://localhost:5173' || origin === 'https://hoppscotch.io' || origin === 'https://media-forge-yyas.vercel.app') {
             callback(null, true)
         } else{
             callback(new Error("Not allowed by CORS"))
